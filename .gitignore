@@ -47,3 +47,18 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+### BIG FILES
+
+# data
+data/data/
+data/data_mh/
+data/final_data/
+data/raw_data/
+
+# les models
+output/
+
+# html
+*.html
+*.png
