@@ -55,9 +55,8 @@ data/data/
 data/data_mh/
 data/final_data/
 data/raw_data/
-
-# les models
-output/Heavy_model_output/
+# output
+heavy_output/
 
 # html
 *.html
