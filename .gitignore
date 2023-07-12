@@ -56,7 +56,7 @@ data/data_mh/
 data/final_data/
 data/raw_data/
 # output
-output_heavy/
+output/heavy/
 
 # html
 *.html
