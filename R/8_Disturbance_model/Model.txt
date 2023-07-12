@@ -1,0 +1,202 @@
+model{
+   #----------------------------------------#
+    #        SUB MODEL BASAL AREA            #
+    #----------------------------------------#
+
+    # Likelihood
+    #------------
+    for (i in 1:N){
+    BA[i] ~ dnorm(mu_ba[i], ba_tau)
+    mu_ba[i] <-
+        ba_intercept +
+        # topographic
+        IS_L[i] * (ba_l0 + ba_l1 * TS_L[i]) +
+        IS_PL[i] * (ba_pl0 + ba_pl1 * TS_PL[i]) +
+        IS_LPR[i] * (ba_lpr0 + ba_lpr1 * TS_LPR[i]) +
+        IS_B[i] * (ba_b0 + ba_b1 * TS_B[i] + ba_b2 * pow(TS_B[i],2)) +
+        IS_O[i] * (ba_o0 + ba_o1 * TS_O[i])
+    BA_res[i] <- BA[i] - mu_ba[i]
+    }
+
+    # Priors
+    #--------
+
+    ba_intercept ~ dunif(-50,50)
+    # perturbation
+    ba_l0 ~ dunif(-50,50)
+    ba_l1 ~ dunif(-50,50)
+    ba_pl0 ~ dunif(-50,50)
+    ba_pl1 ~ dunif(-50,50)
+    ba_lpr0 ~ dunif(-50,50)
+    ba_lpr1 ~ dunif(-50,50)
+    ba_b0 ~ dunif(-50,50)
+    ba_b1 ~ dunif(-50,50)
+    ba_b2 ~ dunif(-50,50)
+    ba_o0 ~ dunif(-50,50)
+    ba_o1 ~ dunif(-50,50)
+    # precision
+    ba_tau ~ dunif(0.0001,20)
+
+    #----------------------------------------#
+    #            MODEL PRESENCE              #
+    #----------------------------------------#
+
+    # Likelihood
+    #-------------
+
+    for (i in 1:N){
+    PRESENCE[i] ~ dbern(p[i])
+
+    p.env[i] <- pa_intercept +
+        # soil
+        pa_epmatorg * EPMATORG[i] + pa_epmatorg2 * pow(EPMATORG[i],2) +
+        pa_ph * PH[i] + pa_ph2 * pow(PH[i],2) +
+        pa_texture[TEXTURE[i]] +
+        # climate
+        pa_tmean * TMEAN[i] + pa_tmean2 * pow(TMEAN[i],2) +
+        pa_cmi * CMI[i] + pa_cmi2 * pow(CMI[i],2) +
+        pa_ba * BA_res[i] +
+        pa_sp * NB_SP[i] + pa_sp2 * pow(NB_SP[i],2)
+
+    logit(p[i]) <- p.env[i] +
+        # perturbation
+        pa_l0[CL_L[i]] +
+        pa_pl0[CL_PL[i]] +
+        pa_lpr0[CL_LPR[i]] +
+        pa_b0[CL_B[i]] +
+        pa_o0[CL_O[i]] +
+        # random effect
+        pa_placette[PLACETTE[i]]
+    }
+
+    # Priors
+    #--------
+
+    pa_intercept ~ dunif(-50,50)
+    # soil
+    pa_epmatorg ~ dunif(-50,50)
+    pa_epmatorg2 ~ dunif(-50,50)
+    pa_ph ~ dunif(-50,50)
+    pa_ph2 ~ dunif(-50,50)
+    for(i in 1:6){
+        pa_texture[i] ~ dunif(-50,50)
+    }
+    # climate
+    pa_tmean ~ dunif(-50,50)
+    pa_cmi ~ dunif(-50,50)
+    pa_tmean2 ~ dunif(-50,50)
+    pa_cmi2 ~ dunif(-50,50)
+    # biotic
+    pa_ba ~ dunif(-50,50)
+    pa_sp ~ dunif(-50,50)
+    pa_sp2 ~ dunif(-50,50)
+    # perturbation
+    
+    for (i in 1:5){
+        pa_l0[i] ~ dunif(-50,50)
+        pa_pl0[i] ~ dunif(-50,50)
+        pa_lpr0[i] ~ dunif(-50,50)
+        pa_o0[i] ~ dunif(-50,50)
+        pa_b0[i] ~ dunif(-50,50)
+    }
+    for (i in 7:8){
+        pa_b0[i] ~ dunif(-50,50)
+    }
+    pa_l0[6] <- 0
+    pa_pl0[6] <- 0
+    pa_lpr0[6] <- 0
+    pa_b0[6] <- 0
+    pa_o0[6] <- 0
+    # random effect
+    for (i in 1:N_PLACETTE) {pa_placette[i] ~ dnorm(0, pa_taupl)}
+    pa_taupl ~ dunif(0.0001,20)
+
+    #----------------------------------------#
+    #            MODEL DENSITE             #
+    #----------------------------------------#
+
+    # Likelihood
+    #-------------
+    for (i in 1:N){
+        DENSITE[i] ~ dpois(lambda[i] * PRESENCE[i] + 0.00001) T(PRESENCE[i],)
+    
+    nb.env[i] <- nb_intercept +
+        # soil
+        nb_epmatorg * EPMATORG[i] + nb_epmatorg2 * pow(EPMATORG[i],2) +
+        nb_ph * PH[i] + nb_ph2 * pow(PH[i],2) +
+        nb_texture[TEXTURE[i]] +
+        # climate
+        nb_tmean * TMEAN[i] + nb_tmean2 * pow(TMEAN[i],2) +
+        nb_cmi * CMI[i] + nb_cmi2 * pow(CMI[i],2) +
+        nb_ba * BA_res[i] +
+        nb_sp * NB_SP[i] + nb_sp2 * pow(NB_SP[i],2)
+
+    log(lambda[i]) <- nb.env[i] +
+        # perturbation
+        nb_l0[CL_L[i]] +
+        nb_pl0[CL_PL[i]] +
+        nb_lpr0[CL_LPR[i]] +
+        nb_b0[CL_B[i]] +
+        nb_o0[CL_O[i]] +
+        # random effect
+        nb_placette[PLACETTE[i]] 
+    }
+
+    # Priors
+    #--------
+
+    nb_intercept ~ dunif(-50,50)
+    # soil
+    nb_epmatorg ~ dunif(-50,50)
+    nb_epmatorg2 ~ dunif(-50,50)
+    nb_ph ~ dunif(-50,50)
+    nb_ph2 ~ dunif(-50,50)
+    for(i in 1:6){
+        nb_texture[i] ~ dunif(-50,50)
+    }
+    # climate
+    nb_tmean ~ dunif(-50,50)
+    nb_cmi ~ dunif(-50,50)
+    nb_tmean2 ~ dunif(-50,50)
+    nb_cmi2 ~ dunif(-50,50)
+    # biotic
+    nb_ba ~ dunif(-50,50)
+    nb_sp ~ dunif(-50,50)
+    nb_sp2 ~ dunif(-50,50)
+    # perturbation
+    
+    for (i in 1:5){
+        nb_l0[i] ~ dunif(-50,50)
+        nb_pl0[i] ~ dunif(-50,50)
+        nb_lpr0[i] ~ dunif(-50,50)
+        nb_o0[i] ~ dunif(-50,50)
+        nb_b0[i] ~ dunif(-50,50)
+    }
+    for (i in 7:8){
+        nb_b0[i] ~ dunif(-50,50)
+    }
+    nb_l0[6] <- 0
+    nb_pl0[6] <- 0
+    nb_lpr0[6] <- 0
+    nb_b0[6] <- 0
+    nb_o0[6] <- 0
+    # random effect
+    for (i in 1:N_PLACETTE) {nb_placette[i] ~ dnorm(0, nb_taupl)}
+    nb_taupl ~ dunif(0.0001,20)
+
+    #----------------------------------------#
+    #          PREDICTION RESIDUS            #
+    #----------------------------------------#
+
+    for (i in 1:N){
+    Pred_pa[i] ~ dbern(p[i])
+    Pred_nb[i] ~ dpois(lambda[i] * Pred_pa[i] + 0.00001) T(Pred_pa[i],)
+    Pred_nb2[i] ~ dpois(lambda[i] * PRESENCE[i] + 0.00001) T(PRESENCE[i],)
+    Res_pa[i] <- p[i] - PRESENCE[i]
+    Res_nb[i] <- lambda[i] - DENSITE[i]
+    #LogLik[i] <- log(dpois(DENSITE[i], lambda[i] * PRESENCE[i] + 0.001))
+    LogLik2[i] <- log(dpois(DENSITE[i], lambda[i] * p[i] + 0.00001))
+    }
+    #Log_likelihood = sum(LogLik)
+    Log_likelihood2 = sum(LogLik2)
+}

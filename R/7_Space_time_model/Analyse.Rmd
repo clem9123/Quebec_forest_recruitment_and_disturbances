@@ -1,0 +1,491 @@
+---
+title : "Test of the migration of temperate species at their northern limit 
+with a glmm model on space and time"
+author : "Clémentine de Montgolfier"
+date : "2023-06-23"
+output : html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "../../")
+```
+
+```{r library, include = FALSE}
+library(tidyverse)
+library(glmmTMB)
+library(patchwork)
+library(DHARMa)
+library(reshape2)
+```
+
+# Introduction et question
+
+Study of the presence and absence of my temperate species on the bioclimatic domains
+of the yellow and white birch fir stands.
+
+For now with the data of the gaules of all size classes.
+
+Problem : the graph of the abundances does not take into account the presence,
+maybe we should make a graph with the two combined (see § combination of presence and abundance)
+
+# Data
+
+Data import and selection :
+- climatic domain selection : 4 (sapinière à bouleau jaune) and 5 (sapinière à bouleau blanc)
+- species selection : ACERUB (Acer rubrum), ACESAC (Acer saccharum), BETALL (betula alleghaniensis)
+
+```{r data}
+load("data/full_data.RData")
+full_data <- full_data %>% 
+  filter(dom_bio %in% c(4,5)) %>%
+  filter(sp_code %in% c("ACERUB", "ACESAC", "BETALL"))
+```
+
+# Model with glmmTMB
+
+Model de hurdle :
+- 1st part : logistic regression on the presence/absence of the species (bernouilli distribution)
+- 2nd part : linear regression on the abundance of the species (truncated poisson distribution)
+
+With :
+- individual run for each species
+- random effect of the plot : id_pe
+- fixed effect and interaction of the year and the latitude
+
+```{r model}
+ACERUB_presence <- glmmTMB(presence_gaule ~ latitude_sc*year_measured_sc + (1|id_pe),
+    data = full_data %>% filter(sp_code == "ACERUB"),
+    family = binomial(link = "logit"))
+ACERUB_abundance <- glmmTMB(all_cl ~ year_measured_sc*latitude_sc + (1|id_pe),
+    data = full_data %>% filter(sp_code == "ACERUB", presence_gaule == 1),
+    family = truncated_poisson(link = "log"))
+
+ACESAC_presence <- glmmTMB(presence_gaule ~ year_measured_sc*latitude_sc + (1|id_pe),
+    data = full_data %>% filter(sp_code == "ACESAC"),
+    family = binomial(link = "logit"))
+ACESAC_abundance <- glmmTMB(all_cl ~ year_measured_sc*latitude_sc + (1|id_pe),
+    data = full_data %>% filter(sp_code == "ACESAC", presence_gaule == 1),
+    family = truncated_poisson(link = "log"))
+
+BETALL_presence <- glmmTMB(presence_gaule ~ year_measured_sc*latitude_sc + (1|id_pe),
+    data = full_data %>% filter(sp_code == "BETALL"),
+    family = binomial(link = "logit"))
+BETALL_abundance <- glmmTMB(all_cl ~ year_measured_sc*latitude_sc + (1|id_pe),
+    data = full_data %>% filter(sp_code == "BETALL", presence_gaule == 1),
+    family = truncated_poisson(link = "log"))
+```
+
+# Model glmmTMB avec latitude et latitude 2
+
+```{r}
+full_data <- full_data %>% mutate(latitude2 = latitude **2,
+    latitude2_sc = latitude_sc ** 2)
+ACERUB_presence2 <- glmmTMB(presence_gaule ~ (latitude_sc + latitude2_sc)*year_measured_sc + (1|id_pe),
+    data = full_data %>% filter(sp_code == "ACERUB"),
+    family = binomial(link = "logit"))
+ACERUB_abundance2 <- glmmTMB(all_cl ~ year_measured_sc*latitude_sc + latitude2_sc*year_measured_sc + (1|id_pe),
+    data = full_data %>% filter(sp_code == "ACERUB", presence_gaule == 1),
+    family = truncated_poisson(link = "log"))
+
+ACESAC_presence2 <- glmmTMB(presence_gaule ~ year_measured_sc*latitude_sc + latitude2_sc*year_measured_sc + (1|id_pe),
+    data = full_data %>% filter(sp_code == "ACESAC"),
+    family = binomial(link = "logit"))
+ACESAC_abundance2 <- glmmTMB(all_cl ~ year_measured_sc*latitude_sc + latitude2_sc*year_measured_sc + (1|id_pe),
+    data = full_data %>% filter(sp_code == "ACESAC", presence_gaule == 1),
+    family = truncated_poisson(link = "log"))
+
+BETALL_presence2 <- glmmTMB(presence_gaule ~ year_measured_sc*latitude_sc + latitude2_sc*year_measured_sc + (1|id_pe),
+    data = full_data %>% filter(sp_code == "BETALL"),
+    family = binomial(link = "logit"))
+BETALL_abundance2 <- glmmTMB(all_cl ~ year_measured_sc*latitude_sc + latitude2_sc*year_measured_sc + (1|id_pe),
+    data = full_data %>% filter(sp_code == "BETALL", presence_gaule == 1),
+    family = truncated_poisson(link = "log"))
+```
+
+```{r summary model}
+summary(ACERUB_presence)
+summary(ACERUB_abundance)
+summary(ACESAC_presence)
+summary(ACESAC_abundance)
+summary(BETALL_presence)
+summary(BETALL_abundance)
+```
+
+```{r}
+summary(ACERUB_presence2)
+summary(ACERUB_abundance2)
+summary(ACESAC_presence2)
+summary(ACESAC_abundance2)
+summary(BETALL_presence2)
+summary(BETALL_abundance2)
+
+step(ACERUB_presence2, direction = "both")
+```
+
+Il y en a qui sont mieux au carré et d'autres non (super interessant comme conclusion)
+
+```{r}
+print(c(AIC(ACERUB_presence), AIC(ACERUB_presence2))) # ACERUB_presence
+print(c(AIC(ACERUB_abundance), AIC(ACERUB_abundance2))) # ACERUB_abundance2
+#ACERUB_abundance = ACERUB_abundance2
+print(c(AIC(ACESAC_presence), AIC(ACESAC_presence2))) # ACESAC_presence2
+#ACESAC_presence = ACESAC_presence2
+print(c(AIC(ACESAC_abundance), AIC(ACESAC_abundance2))) # ACESAC_abundance
+print(c(AIC(BETALL_presence), AIC(BETALL_presence2))) # BETALL_presence
+print(c(AIC(BETALL_abundance), AIC(BETALL_abundance2))) # BETALL_abundance2
+#BETALL_presence = BETALL_presence2
+```
+
+Model check :
+- residual distribution
+- residual vs fitted values
+- over/underdispersion
+
+```{r model check}
+list_model = list(ACESAC_presence, ACERUB_abundance, ACESAC_presence, ACESAC_abundance, BETALL_presence, BETALL_abundance)
+for (model in list_model) {
+    resid_sim <- simulateResiduals(model, integerResponse = TRUE)
+    plot(resid_sim)
+}
+```
+
+# Figures
+
+Plot of the predictions :
+- for each species
+- for each part of the model (presence/absence and abundance)
+- with : 
+    - the latitude on the x axis
+    - the year on the y axis
+    - the color for the prediction
+
+last paragraphe in english :
+
+Table for all species and the two parts of the model :
+- with the presence probabilities
+- with the abundances
+- with a column for the species (sp_code)
+
+```{r prediction data}
+predictions = data.frame()
+# Créer une grille pour le temps
+time_grid <- seq(
+    min(full_data$year_measured_sc),
+    max(full_data$year_measured_sc),
+    length.out = 50)
+# Créer une grille pour la latitude
+latitude_grid <- seq(
+    min(full_data$latitude_sc),
+    max(full_data$latitude_sc),
+    length.out = 50)
+
+for (sp in c("ACERUB", "ACESAC", "BETALL")){
+    for (part in c("presence", "abundance")){
+        model_presence <- get(paste0(sp, "_", "presence", "2"))
+        model_abundance <- get(paste0(sp, "_", "abundance", "2"))
+        df <- expand.grid(
+            year_measured_sc = time_grid,
+            latitude_sc = latitude_grid) %>%
+            mutate(latitude2_sc = latitude_sc**2)
+        df$id_pe = "dummy"
+        df$pred_presence <- predict(
+            model_presence, type = "response",
+            newdata = df, se.fit = FALSE, allow.new.levels = TRUE)
+        df$pred_abundance <- predict(
+            model_abundance, type = "response",
+            newdata = df, se.fit = FALSE, allow.new.levels = TRUE)
+        df$sp_code <- sp
+        #df$part <- part
+        predictions <- rbind(predictions, df)
+    }
+}
+df$pred_
+```
+
+
+```{r prediction plot}
+# Créer la heatmap avec ggplot2
+ACERUB_plot <- 
+    ggplot(predictions %>% filter(sp_code == "ACERUB"), aes(y = latitude_sc, x = year_measured_sc, fill = pred_presence)) +
+        geom_tile() +
+        scale_fill_gradient(low = "#f2f92697", high ="#e22121eb") +
+        theme_bw() +
+        labs(y = "Latitude", x = "Année", fill = "Presence probability", title = "ACERUB") +
+    ggplot(predictions %>% filter(sp_code == "ACERUB"), aes(y = latitude_sc, x = year_measured_sc, fill = pred_abundance)) +
+        geom_tile() +
+        scale_fill_gradient(low = "#26d2f997", high ="#3113c5eb") +
+        theme_bw() +
+        labs(y = "Latitude", x = "Année", fill = "Presence probability")
+ACESAC_plot <- 
+    ggplot(predictions %>% filter(sp_code == "ACESAC"), aes(y = latitude_sc, x = year_measured_sc, fill = pred_presence)) +
+        geom_tile() +
+        scale_fill_gradient(low = "#f2f92697", high ="#e22121eb") +
+        theme_bw() +
+        labs(y = "Latitude", x = "Année", fill = "Presence probability", title = "ACESAC") +
+    ggplot(predictions %>% filter(sp_code == "ACESAC"), aes(y = latitude_sc, x = year_measured_sc, fill = pred_abundance)) +
+        geom_tile() +
+        scale_fill_gradient(low = "#26d2f997", high ="#3113c5eb") +
+        theme_bw() +
+        labs(y = "Latitude", x = "Année", fill = "Mean salpings density")
+BETALL_plot <-
+        ggplot(predictions %>% filter(sp_code == "BETALL"), aes(y = latitude_sc, x = year_measured_sc, fill = pred_presence)) +
+        geom_tile() +
+        scale_fill_gradient(low = "#f2f92697", high ="#e22121eb") +
+        theme_bw() +
+        labs(y = "Latitude", x = "Année", fill = "Presence probability", title = "BETALL") +
+    ggplot(predictions %>% filter(sp_code == "BETALL"), aes(y = latitude_sc, x = year_measured_sc, fill = pred_abundance)) +
+        geom_tile() +
+        scale_fill_gradient(low = "#26d2f997", high ="#3113c5eb") +
+        theme_bw() +
+        labs(y = "Latitude", x = "Année", fill = "Mean salpings density")
+```
+
+```{r print plot, fig.height = 6}
+ACERUB_plot / ACESAC_plot / BETALL_plot
+```
+
+# combinations of presence and abundance
+
+CAn we do it like this with a simple multiplication ?
+
+```{r combination prediction plot}
+
+ACERUB_combination_plot <-
+    ggplot(predictions %>% filter(sp_code == "ACERUB"),
+        aes(y = latitude_sc, x = year_measured_sc, fill = pred_ACERUB)) +
+        geom_tile() +
+        scale_fill_gradient(low = "#f2f92697", high ="#e22121eb") +
+        theme_bw() +
+        labs(y = "Latitude", x = "Année", fill = "Presence probability * Abondance", title = "ACERUB")
+ACESAC_combination_plot <-
+     ggplot(predictions %>% filter(sp_code == "ACESAC"),
+        aes(y = latitude_sc, x = year_measured_sc, fill = pred_ACESAC)) +
+        geom_tile() +
+        scale_fill_gradient(low = "#f2f92697", high ="#e22121eb") +
+        theme_bw() +
+        labs(y = "Latitude", x = "Année", fill = "Presence probability * Abondance", title = "ACESAC")
+BETALL_combination_plot <-
+     ggplot(predictions %>% filter(sp_code == "BETALL"),
+        aes(y = latitude_sc, x = year_measured_sc, fill = pred_BETALL)) +
+        geom_tile() +
+        scale_fill_gradient(low = "#f2f92697", high ="#e22121eb") +
+        theme_bw() +
+        labs(y = "Latitude", x = "Année", fill = "Presence probability * Abondance", title = "BETALL")
+```
+
+```{r print combination plot}
+ACERUB_combination_plot / ACESAC_combination_plot / BETALL_combination_plot
+```
+
+# Model with pscl
+
+It was a test with another library which has the hurdle model directly
+but we can't add random effects so not very interesting
+
+```{r model pscl}
+library(pscl)
+hurdle_ACERUB <- hurdle(all_cl ~ year_measured_sc*latitude_sc,
+    data = full_data %>% filter(sp_code == "ACERUB") %>% mutate(id_pe = as.numeric(id_pe)),
+    dist = "poisson", zero.dist = "binomial", model = TRUE)
+summary(hurdle_ACERUB)
+```
+
+# Model with GAMM
+
+```{r}
+library(gam)
+
+model <- gam::gam(presence_gaule ~ s(latitude_sc)*year_measured_sc,
+    data = full_data %>% filter(sp_code == "ACERUB"),
+    family = binomial(link = "logit"))
+summary(model)
+```
+
+```{r}
+time_grid <- seq(
+    min(full_data$year_measured_sc),
+    max(full_data$year_measured_sc),
+    length.out = 50)
+# Créer une grille pour la latitude
+latitude_grid <- seq(
+    min(full_data$latitude_sc),
+    max(full_data$latitude_sc),
+    length.out = 50)
+new_data <- expand.grid(
+            year_measured_sc = time_grid,
+            latitude_sc = latitude_grid)
+pred <- predict.Gam(model,new_data, type = "response")
+ggplot(pred) +
+    geom_point(aes())
+```
+
+# Avec glmmTMB
+
+```{r}
+model_sp <- function(sp, part){
+    if(part == "presence"){
+    return(glmmTMB(
+        presence_gaule ~ latitude_sc*year_measured_sc +
+            (1|id_pe),
+        data = full_data %>% filter(sp_code == sp),
+        family = binomial(link = "logit")))
+    }
+    if(part == "abundance"){
+    return(glmmTMB(
+    all_cl ~ latitude_sc*year_measured_sc +
+            (1|id_pe),
+    data = full_data %>% filter(sp_code == sp, presence_gaule == 1),
+    family = truncated_poisson(link = "log")))
+    }
+}
+```
+
+```{r}
+Mysp = c("ACERUB", "ACESAC", "BETALL")
+for (s in Mysp){
+    for(p in c("presence", "abundance")){
+        assign(paste0(s, "_", p), model_sp(s,p))
+    }
+}
+```
+
+```{r}
+summary(ACESAC_presence)
+summary(ACESAC_abundance)
+
+summary(ACERUB_presence)
+summary(ACERUB_abundance)
+
+summary(BETALL_presence)
+summary(BETALL_abundance)
+```
+
+```{r}
+time_grid <- seq(
+    min(full_data$year_measured_sc),
+    max(full_data$year_measured_sc),
+    length.out = 20)
+# Créer une grille pour la latitude
+latitude_grid <- seq(
+    min(full_data$latitude_sc),
+    max(full_data$latitude_sc),
+    length.out = 20)
+new_data <- expand.grid(
+            year_measured_sc = time_grid,
+            latitude_sc = latitude_grid,
+            latitude2_sc = latitude_grid^2,
+            id_pe = 1)
+
+latitude_grid_ACERUB <- seq(
+    full_data %>% filter(sp_code == "ACERUB") %>% min(latitude_sc),
+    full_data %>% filter(sp_code == "ACERUB") %>% max(latitude_sc),
+    length.out = 20)
+latitude_grid <- seq(
+    min(full_data$latitude_sc),
+    max(full_data$latitude_sc),
+    length.out = 20)
+latitude_grid <- seq(
+    min(full_data$latitude_sc),
+    max(full_data$latitude_sc),
+    length.out = 20)
+
+
+new_data$pred_ACERUB_presence <- predict(ACERUB_presence, newdata = new_data, type = "response", allow.new.levels = TRUE)
+new_data$pred_ACERUB_abundance <- predict(ACERUB_abundance, newdata = new_data, type = "response", allow.new.levels = TRUE)
+new_data$pred_ACERUB = new_data$pred_ACERUB_presence * new_data$pred_ACERUB_abundance
+new_data$pred_ACESAC_presence <- predict(ACESAC_presence, newdata = new_data, type = "response", allow.new.levels = TRUE)
+new_data$pred_ACESAC_abundance <- predict(ACESAC_abundance, newdata = new_data, type = "response", allow.new.levels = TRUE)
+new_data$pred_ACESAC = new_data$pred_ACESAC_presence * new_data$pred_ACESAC_abundance
+new_data$pred_BETALL_presence <- predict(BETALL_presence, newdata = new_data, type = "response", allow.new.levels = TRUE)
+new_data$pred_BETALL_abundance <- predict(BETALL_abundance, newdata = new_data, type = "response", allow.new.levels = TRUE)
+new_data$pred_BETALL = new_data$pred_BETALL_presence * new_data$pred_BETALL_abundance
+# remplacer les 0 par NA
+#new_data$pred_ACERUB[new_data$pred_ACERUB == 0] <- NA
+```
+
+```{r}
+new_data
+```
+
+```{r combination prediction plot}
+ACERUB_combination_plot <-
+    ggplot(new_data) + #%>% filter(sp_code == "ACERUB"),
+        aes(y = latitude_sc, x = year_measured_sc, fill = pred_ACERUB) +
+        geom_tile() +
+        scale_fill_gradient(low = "#f2f92697", high ="#e22121eb") +
+        theme_bw() +
+        labs(y = "Latitude", x = "Année", fill = "Presence probability * Abondance", title = "ACERUB")
+ACESAC_combination_plot <-
+    ggplot(new_data) +
+        aes(y = latitude_sc, x = year_measured_sc, fill = pred_ACESAC) +
+        geom_tile() +
+        scale_fill_gradient(low = "#f2f92697", high ="#e22121eb") +
+        theme_bw() +
+        labs(y = "Latitude", x = "Année", fill = "Presence probability * Abondance", title = "ACESAC")
+BETALL_combination_plot <-
+    ggplot(new_data) +
+        aes(y = latitude_sc, x = year_measured_sc, fill = pred_BETALL) +
+        geom_tile() +
+        scale_fill_gradient(low = "#f2f92697", high ="#e22121eb") +
+        theme_bw() +
+        labs(y = "Latitude", x = "Année", fill = "Presence probability * Abondance", title = "BETALL")
+```
+
+```{r print combination plot}
+ACERUB_combination_plot / ACESAC_combination_plot / BETALL_combination_plot
+```
+
+```{r}
+full_data$pred_ACERUB_presence <- predict(ACERUB_presence, newdata = full_data, type = "response")
+full_data$pred_ACERUB_abundance <- predict(ACERUB_abundance, newdata = full_data, type = "response", allow.new.levels = TRUE)
+full_data$pred_ACERUB = full_data$pred_ACERUB_presence * full_data$pred_ACERUB_abundance
+```
+
+```{r}
+ACERUB_combination_plot <-
+    ggplot(new_data) +
+        aes(y = latitude, x = year_measured, color = pred_ACERUB) +
+        geom_point() +
+        scale_color_gradient(low = "#f2f92697", high ="#e22121eb") +
+        theme_bw() +
+        labs(y = "Latitude", x = "Année", fill = "Presence probability * Abondance", title = "ACERUB")
+ACESAC_combination_plot <-
+    ggplot(new_data) +
+        aes(y = latitude_sc, x = year_measured_sc, fill = pred_ACESAC) +
+        geom_tile() +
+        scale_fill_gradient(low = "#f2f92697", high ="#e22121eb") +
+        theme_bw() +
+        labs(y = "Latitude", x = "Année", fill = "Presence probability * Abondance", title = "ACESAC")
+BETALL_combination_plot <-
+    ggplot(new_data) +
+        aes(y = latitude_sc, x = year_measured_sc, fill = pred_BETALL) +
+        geom_tile() +
+        scale_fill_gradient(low = "#f2f92697", high ="#e22121eb") +
+        theme_bw() +
+        labs(y = "Latitude", x = "Année", fill = "Presence probability * Abondance", title = "BETALL")
+```
+
+```{r}
+ACERUB_combination_plot <-
+    ggplot(new_data) +
+        aes(y = latitude_sc, x = year_measured_sc, fill = pred_ACERUB) +
+        geom_tile() +
+        scale_fill_gradient(low = "#f2f92697", high ="#e22121eb") +
+        theme_bw() +
+        labs(y = "Latitude", x = "Année", fill = "Presence probability * Abondance", title = "ACERUB")
+ACESAC_combination_plot <-
+    ggplot(new_data) +
+        aes(y = latitude_sc, x = year_measured_sc, fill = pred_ACESAC) +
+        geom_tile() +
+        scale_fill_gradient(low = "#f2f92697", high ="#e22121eb") +
+        theme_bw() +
+        labs(y = "Latitude", x = "Année", fill = "Presence probability * Abondance", title = "ACESAC")
+BETALL_combination_plot <-
+    ggplot(new_data) +
+        aes(y = latitude_sc, x = year_measured_sc, fill = pred_BETALL) +
+        geom_tile() +
+        scale_fill_gradient(low = "#f2f92697", high ="#e22121eb") +
+        theme_bw() +
+        labs(y = "Latitude", x = "Année", fill = "Presence probability * Abondance", title = "BETALL")
+```
