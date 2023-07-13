@@ -19,6 +19,7 @@ pep_xy <- readRDS("data/data/pep_xy.RDS") %>% encoding()
 perturb_data <- readRDS("data/data/perturbation_data.RDS") %>% encoding()
 #bioclim <- readRDS("data/bioclim_long.RDS") %>% encoding()
 placette_mes <- readRDS("data/data/placette_mes.RDS") %>% encoding()
+pep_pe <- st_read("data/raw_data/PEP_GPKG/PEP.gpkg", layer = "station_pe")
 
 # arbre adulte vivant (de la periode, en comptant les recrues)
 adulte_data <- tree_data %>%
@@ -76,6 +77,16 @@ data <- data %>% mutate(is_species = ifelse(tree_nb_sp >0, 1, 0))
 # nouvelle colonne presance absence de gaule avec all_gaule > 0
 data <- data %>% mutate(presence_gaule = ifelse(all_cl > 0, 1, 0))
 
+### Add environmental data
+
+# Add column with soil texture and drainage index (from first number caracter of column type eco)
+env_data <- env_data %>%
+    left_join(
+        pep_pe %>% 
+        mutate(soil = ifelse(type_eco== "ND", NA, substr(type_eco, 3, 3))) %>% 
+        select(id_pe, soil),
+        all.x = TRUE)
+
 data <- data %>% merge(env_data, all.x = TRUE)
 data <- data %>%
     merge(pep_xy %>%
@@ -89,7 +100,7 @@ data <- data %>%
     group_by(id_pe) %>%
     tidyr::fill(c("typehumus", "epmatorg", "ph_humus", "ph_horizb",
         "pourcpierr", "cl_age", "cl_drai", "cl_drai2", "dep_sur", #"exposition",
-        "longitude", "latitude", "age_mean"),
+        "longitude", "latitude", "age_mean", "soil"),
         .direction = "downup") %>%
     ungroup() %>%
     encoding()
@@ -99,7 +110,8 @@ data <- data %>%
 #  BETPAP, POPTRE (Mixtes)
 # ACERUB, ACESAC, BETALL, ACESPI, THUOCC (Tempérées)
 data <- data %>% 
-    filter(sp_code %in% c("ABIBAL","ACESAC", "ACERUB","BETALL","PICMAR", "PICGLA", "BETPAP", "POPTRE"))
+    filter(sp_code %in% c("ABIBAL","ACESAC", "ACERUB","BETALL","PICMAR", "PICGLA", "BETPAP", "POPTRE")) %>%
+    filter(dom_bio %in% c(4,5))
 
 ################################################################################
 
@@ -178,7 +190,6 @@ full_data <- full_data %>% mutate(
 
 # Ne garder que la dernier perturbation
 
-
 full_data <- full_data %>%
     mutate(
         is_logging = ifelse(is.na(logging), 0, 1),
@@ -232,7 +243,7 @@ scaling <- full_data %>%
 scaling_data <- data.frame(param = colnames(scaling), value = as.numeric(scaling[1,])) %>%
     separate(col = param, into = c("var", "mean_sd"), sep = "_(?!.*_)")
 
-full_data <- full_data %>%
+full_data <- full_data %>% group_by(sp_code) %>%
     mutate(
     year_measured_sc = scale(year_measured)[,],
     latitude_sc = scale(latitude)[,],
@@ -249,23 +260,22 @@ full_data <- full_data %>%
     all_cl_sc = scale(all_cl)[,],
     is_burn_sc = scale(is_burn)[,],
     is_outbreak_sc = scale(is_outbreak)[,],
-    tree_ba_sp_sc = scale(tree_ba_sp)[,]
-    ) %>%
+    tree_ba_sp_sc = scale(tree_ba_sp)[,]) %>%
+    ungroup() %>%
     arrange(id_pe) %>%
     mutate(
     id_pe_sc = as.numeric(as.factor(id_pe)),
     cl_drai_sc = as.numeric(factor(cl_drai)),
-    texture_sc = as.numeric(factor(texture))
-    )
+    texture_sc = as.numeric(factor(texture)))
 
 # change all NA in 0
-full_data[is.na(full_data)] <- 0
+full_data[is.na(full_data) & is.numeric(full_data)] <- 0
 
 # bioclim_data
-bioclim <- readRDS("data/bioclim_345.RDS") %>%
+bioclim <- readRDS("data/final_data/bioclim_345.RDS") %>%
     data.frame() %>%
     select(-c(longitude, latitude, dom_bio, altitude, geometry)) %>%
-    rbind(readRDS("data/bioclim_126789.RDS")) %>%
+    rbind(readRDS("data/final_data/bioclim_126789.RDS")) %>%
     filter(id_pe %in% pep_xy$id_pe) %>% arrange(id_pe)
 
 meanT <- bioclim %>% dplyr::select(id_pe, year,  an_meanT) %>%
@@ -316,7 +326,7 @@ full_data <- full_data %>%
 # ajouter une colonne cl_logging, cl_partial_logging, cl_burn, cl_outbreak, cl_logging_pr
 # avec 1 si la perturbation est entre 5 et 15 et 2 si la perturbation est entre 20 et 30
 
-full_data <- full_data %>%
+full_data <- full_data %>% data.frame() %>%
     mutate(cl_logging = case_when(
         is_logging == 0 ~ 6,
         logging <= 5 ~ 4,
@@ -353,18 +363,36 @@ full_data <- full_data %>%
         logging_pr <= 15 ~ 1,
         logging_pr <= 25 ~ 2,
         logging_pr <= 35 ~ 3,
-        TRUE ~ 5))*
+        TRUE ~ 5))
+
+full_data %>% select(- "NA.") %>%
+    # change in perturb columns : burn, logging, partial_logging, outbreak, logging_pr NA to 0
+    mutate(burn = ifelse(is.na(burn), 0, burn),
+        logging = ifelse(is.na(logging), 0, logging),
+        partial_logging = ifelse(is.na(partial_logging), 0, partial_logging),
+        outbreak = ifelse(is.na(outbreak), 0, outbreak),
+        logging_pr = ifelse(is.na(logging_pr), 0, logging_pr)) %>%
+    # change in perturb columns : burn, logging, partial_logging, outbreak, logging_pr NA to 0
+    mutate(burn_sc = ifelse(is.na(burn_sc), 0, burn),
+        logging_sc = ifelse(is.na(logging_sc), 0, logging),
+        partial_logging_sc = ifelse(is.na(partial_logging_sc), 0, partial_logging),
+        outbreak_sc = ifelse(is.na(outbreak_sc), 0, outbreak),
+        logging_pr_sc = ifelse(is.na(logging_pr_sc), 0, logging_pr_sc)) -> full_data
 
 full_data %>% mutate(texture_sc = factor(texture, levels = c("0","Coarse","Fine","Medium", "Organique", "Rock"),
 labels = c("6","1","2","3","4","5"))) -> full_data
 
+full_data <- na.omit(full_data)
+
 save(full_data, scaling, file = "data/full_data.RData")
 
-pep_xy <- readRDS("data/data/pep_xy.RDS")
-placette_mes <- readRDS("data/data/placette_mes.RDS")
-
-load("data/full_data.RData")
-
+#pep_xy <- readRDS("data/data/pep_xy.RDS")
+#placette_mes <- readRDS("data/data/placette_mes.RDS")
+#
+#
+#
+#load("data/full_data.RData")
+#
 # ne garder que la dernière perturbation : la date de la colonne logging ou autre perturb doit être la plus récente que toute les autres
 #full_data1 <- full_data %>%
 #    mutate(

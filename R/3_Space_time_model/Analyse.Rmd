@@ -1,0 +1,309 @@
+---
+title : "Test of the migration of temperate species at their northern limit 
+with a glmm model on space and time"
+author : "Clémentine de Montgolfier"
+date : "2023-06-23"
+output : html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "../../")
+```
+
+```{r library, include = FALSE}
+library(tidyverse)
+library(glmmTMB)
+library(patchwork)
+library(DHARMa)
+library(reshape2)
+```
+
+# Introduction et question
+
+Study of the presence and absence of my temperate species on the bioclimatic domains
+of the yellow and white birch fir stands.
+
+For now with the data of the gaules of all size classes.
+
+Problem : the graph of the abundances does not take into account the presence,
+maybe we should make a graph with the two combined (see § combination of presence and abundance)
+
+# Data
+
+Data import and selection :
+- climatic domain selection : 4 (sapinière à bouleau jaune) and 5 (sapinière à bouleau blanc)
+- species selection : ACERUB (Acer rubrum), ACESAC (Acer saccharum), BETALL (betula alleghaniensis)
+
+```{r data}
+load("data/full_data.RData")
+```
+
+# Model with glmmTMB
+
+Model de hurdle :
+- 1st part : logistic regression on the presence/absence of the species (bernouilli distribution)
+- 2nd part : linear regression on the abundance of the species (truncated poisson distribution)
+
+With :
+- individual run for each species
+- random effect of the plot : id_pe
+- fixed effect and interaction of the year and the latitude
+
+```{r}
+model_sp <- function(sp, part){
+    if(part == "presence"){
+    return(glmmTMB(
+        presence_gaule ~ latitude_sc*year_measured_sc +
+            (1|id_pe),
+        data = full_data %>% filter(sp_code == sp),
+        family = binomial(link = "logit")))
+    }
+    if(part == "abundance"){
+    return(glmmTMB(
+    all_cl ~ latitude_sc*year_measured_sc +
+            (1|id_pe),
+    data = full_data %>% filter(sp_code == sp, presence_gaule == 1),
+    family = truncated_poisson(link = "log")))
+    }
+}
+```
+
+```{r}
+Mysp = c("ACERUB", "ACESAC", "BETALL")
+for (s in Mysp){
+    for(p in c("presence", "abundance")){
+        assign(paste0(s, "_", p), model_sp(s,p))
+    }
+}
+```
+
+# Model check
+
+Model check :
+- residual distribution
+- residual vs fitted values
+- over/underdispersion
+
+```{r model check}
+list_model = list(ACESAC_presence, ACERUB_abundance, ACESAC_presence, ACESAC_abundance, BETALL_presence, BETALL_abundance)
+for (model in list_model) {
+    resid_sim <- simulateResiduals(model, integerResponse = TRUE)
+    plot(resid_sim)
+}
+```
+
+# Predictions
+
+```{r}
+time_grid <- seq(
+    min(full_data$year_measured_sc),
+    max(full_data$year_measured_sc),
+    length.out = 20)
+# Créer une grille pour la latitude
+latitude_grid <- seq(
+    min(full_data$latitude_sc),
+    max(full_data$latitude_sc),
+    length.out = 20)
+new_data <- expand.grid(
+            year_measured_sc = time_grid,
+            latitude_sc = latitude_grid,
+            latitude2_sc = latitude_grid^2,
+            id_pe = 1)
+# faire les colonnes latitudes et year_measured unscalled
+mean_year = scaling[which(scaling$var == "year_measured" & scaling$mean_sd == "mean"),]$value %>% as.numeric()
+sd_year = scaling[which(scaling$var == "year_measured" & scaling$mean_sd == "sd"),]$value %>% as.numeric()
+mean_lat = scaling[which(scaling$var == "latitude" & scaling$mean_sd == "mean"),]$value %>% as.numeric()
+sd_lat = scaling[which(scaling$var == "latitude" & scaling$mean_sd == "sd"),]$value %>% as.numeric()
+new_data$latitude <- new_data$latitude_sc * sd_lat + mean_lat
+new_data$year_measured <- new_data$year_measured_sc * sd_year + mean_year
+
+new_data$pred_ACERUB_presence <- predict(ACERUB_presence, newdata = new_data, type = "response", allow.new.levels = TRUE)
+new_data$pred_ACERUB_abundance <- predict(ACERUB_abundance, newdata = new_data, type = "response", allow.new.levels = TRUE)
+new_data$pred_ACERUB = new_data$pred_ACERUB_presence * new_data$pred_ACERUB_abundance
+new_data$pred_ACESAC_presence <- predict(ACESAC_presence, newdata = new_data, type = "response", allow.new.levels = TRUE)
+new_data$pred_ACESAC_abundance <- predict(ACESAC_abundance, newdata = new_data, type = "response", allow.new.levels = TRUE)
+new_data$pred_ACESAC = new_data$pred_ACESAC_presence * new_data$pred_ACESAC_abundance
+new_data$pred_BETALL_presence <- predict(BETALL_presence, newdata = new_data, type = "response", allow.new.levels = TRUE)
+new_data$pred_BETALL_abundance <- predict(BETALL_abundance, newdata = new_data, type = "response", allow.new.levels = TRUE)
+new_data$pred_BETALL = new_data$pred_BETALL_presence * new_data$pred_BETALL_abundance
+# remplacer les 0 par NA
+#new_data$pred_ACERUB[new_data$pred_ACERUB == 0] <- NA
+
+wd <- new_data %>% pivot_longer(cols = c("pred_ACERUB", "pred_ACESAC", "pred_BETALL"), names_to = "sp_code", values_to = "pred")
+# colonne sp code : selectionner seulement les 6 derniers caractères
+wd$sp_code <- substr(wd$sp_code, 6, 11)
+```
+
+# Figures
+
+Plot of the predictions :
+- for each species
+- for each part of the model (presence/absence and abundance)
+- with : 
+    - the latitude on the x axis
+    - the year on the y axiswd
+
+    - the color for the prediction
+
+last paragraphe in english :
+
+Table for all species and the two parts of the model :
+- with the presence probabilities
+- with the abundances
+- with a column for the species (sp_code)
+
+```{r}
+library("RColorBrewer")
+myPalette1 <- colorRampPalette(c("#1ee4e7", "#1ee4e7", "#17b91f", "#fffb00", "#e5a836", "#e26e10", "#c00606", "#670101"))
+# créer ma propre palette de couleur avec 20 couleurs et des plus grands écart de couleurs au début
+myPalette2 <- colorRampPalette(c("white","#001b92", "#1ee4e7", "#14af1c", "#fffb00", "#e5a836", "#e26e10", "#c00606", "#670101"))
+myPalette3 <- colorRampPalette(c("white","#001b92", "#1ee4e7", "#14af1c", "#fffb00", "#e5a836", "#e5a836","#e26e10", "#e26e10","#c00606", "#c00606", "#670101", "#670101"))
+```
+
+```{r combination prediction plot}
+combination_plot <-
+    ggplot(wd) +
+        aes(y = latitude, x = year_measured, fill = log(pred)) +
+        geom_raster(interpolate = TRUE) +
+        scale_fill_gradientn(colours = myPalette1(200), labels = function(x) format(x, scientific = TRUE)) +
+        facet_wrap(~sp_code, labeller = as_labeller(c("ACERUB" = "A. rubrum", "ACESAC" = "A. saccharum",
+                        "BETALL" = "B. alleghaniensis"))) +
+        scale_x_continuous(expand=c(0,0)) +
+        scale_y_continuous(expand=c(0,0)) +
+        # Ecrire les facettes en haut sans background
+        theme(strip.background = element_blank(),
+              strip.text.x = element_text(size = 10, face = "italic", color = "black", hjust = 0),
+              strip.placement = "outside") +
+        # afficher les lignes des axes sur toutes les facettes
+        theme(panel.border = element_rect(colour = "black", fill=NA, size=0.5)) +
+    # limite entre les facettes
+        theme(panel.spacing = unit(2, "lines")) +
+        # gradiant legend : plot height
+        guides(fill = guide_colourbar(barheight = 20)) +
+        labs(y = "Latitude", x = "Year", fill = "log(Sapling number)")
+```
+
+```{r print combination plot}
+combination_plot
+```
+
+# Pour les autres espèces
+
+```{r}
+Mysp = c("ABIBAL","PICMAR","PICGLA","BETPAP","POPTRE")
+for (s in Mysp){
+    for(p in c("presence", "abundance")){
+        assign(paste0(s, "_", p), model_sp(s,p))
+    }
+}
+```
+
+```{r}
+time_grid <- seq(
+    min(full_data$year_measured_sc),
+    max(full_data$year_measured_sc),
+    length.out = 20)
+# Créer une grille pour la latitude
+latitude_grid <- seq(
+    min(full_data$latitude_sc),
+    max(full_data$latitude_sc),
+    length.out = 20)
+new_data <- expand.grid(
+            year_measured_sc = time_grid,
+            latitude_sc = latitude_grid,
+            latitude2_sc = latitude_grid^2,
+            id_pe = 1)
+# faire les colonnes latitudes et year_measured unscalled
+mean_year = scaling[which(scaling$var == "year_measured" & scaling$mean_sd == "mean"),]$value %>% as.numeric()
+sd_year = scaling[which(scaling$var == "year_measured" & scaling$mean_sd == "sd"),]$value %>% as.numeric()
+mean_lat = scaling[which(scaling$var == "latitude" & scaling$mean_sd == "mean"),]$value %>% as.numeric()
+sd_lat = scaling[which(scaling$var == "latitude" & scaling$mean_sd == "sd"),]$value %>% as.numeric()
+new_data$latitude <- new_data$latitude_sc * sd_lat + mean_lat
+new_data$year_measured <- new_data$year_measured_sc * sd_year + mean_year
+
+
+for (sp in Mysp){
+    new_data <- new_data %>% mutate(!!paste0("pred_", sp, "_presence") := predict(get(paste0(sp, "_presence")), newdata = new_data, type = "response", allow.new.levels = TRUE),
+                                    !!paste0("pred_", sp, "_abundance") := predict(get(paste0(sp, "_abundance")), newdata = new_data, type = "response", allow.new.levels = TRUE),
+                                    !!paste0("pred_", sp) := !!sym(paste0("pred_", sp, "_presence")) * !!sym(paste0("pred_", sp, "_abundance")))
+}
+
+wd <- new_data %>% pivot_longer(cols = c("pred_ABIBAL", "pred_PICMAR", "pred_PICGLA", "pred_BETPAP", "pred_POPTRE"), names_to = "sp_code", values_to = "pred")
+# colonne sp code : selectionner seulement les 6 derniers caractères
+wd$sp_code <- substr(wd$sp_code, 6, 11)
+```
+
+```{r combination prediction plot reste}
+combination_plot2 <-
+    ggplot(wd %>% filter(sp_code %in% c("ABIBAL", "PICMAR"))) +
+        aes(y = latitude, x = year_measured, fill = pred) +
+        geom_raster(interpolate = TRUE) +
+        scale_fill_gradientn(colours = myPalette2(500), labels = function(x) format(x, scientific = TRUE)) +
+        facet_wrap(~sp_code, labeller = as_labeller(c("ABIBAL" = "A. balsamea", "PICMAR" = "P. mariana",
+                        "PICGLA" = "P. glauca", "BETPAP" = "B. papyrifera", "POPTRE" = "P. tremuloides"))) +
+        scale_x_continuous(expand=c(0,0)) +
+        scale_y_continuous(expand=c(0,0)) +
+        # Ecrire les facettes en haut sans background
+        theme(strip.background = element_blank(),
+              strip.text.x = element_text(size = 10, face = "italic", color = "black", hjust = 0),
+              strip.placement = "outside") +
+        # afficher les lignes des axes sur toutes les facettes
+        theme(panel.border = element_rect(colour = "black", fill=NA, size=0.5)) +
+    # limite entre les facettes
+        theme(panel.spacing = unit(2, "lines")) +
+        # gradiant legend : plot height
+        guides(fill = guide_colourbar(barheight = 5)) +
+        labs(y = "Latitude", x = "Year", fill = "Sapling number")
+
+combination_plot3 <-
+    ggplot(wd %>% filter(sp_code %in% c("BETPAP"))) +
+        aes(y = latitude, x = year_measured, fill = pred) +
+        geom_raster(interpolate = TRUE) +
+        scale_fill_gradientn(colours = myPalette2(500), labels = function(x) format(x, scientific = TRUE)) +
+        facet_wrap(~sp_code, labeller = as_labeller(c("ABIBAL" = "A. balsamea", "PICMAR" = "P. mariana",
+                        "PICGLA" = "P. glauca", "BETPAP" = "B. papyrifera", "POPTRE" = "P. tremuloides")), scale = "free") +
+        scale_x_continuous(expand=c(0,0)) +
+        scale_y_continuous(expand=c(0,0)) +
+        # Ecrire les facettes en haut sans background
+        theme(strip.background = element_blank(),
+              strip.text.x = element_text(size = 10, face = "italic", color = "black", hjust = 0),
+              strip.placement = "outside") +
+        # afficher les lignes des axes sur toutes les facettes
+        theme(panel.border = element_rect(colour = "black", fill=NA, size=0.5)) +
+    # limite entre les facettes
+        theme(panel.spacing = unit(2, "lines")) +
+        # gradiant legend : plot height
+        guides(fill = guide_colourbar(barheight = 5)) +
+        labs(y = "Latitude", x = "Year", fill = "Sapling number")
+
+combination_plot4 <-
+    ggplot(wd %>% filter(sp_code %in% c("POPTRE", "PICGLA"))) +
+        aes(y = latitude, x = year_measured, fill = pred) +
+        geom_raster(interpolate = TRUE) +
+        scale_fill_gradientn(colours = myPalette2(500), labels = function(x) format(x, scientific = TRUE)) +
+        facet_wrap(~sp_code, labeller = as_labeller(c("ABIBAL" = "A. balsamea", "PICMAR" = "P. mariana",
+                        "PICGLA" = "P. glauca", "BETPAP" = "B. papyrifera", "POPTRE" = "P. tremuloides")), scale = "free") +
+        scale_x_continuous(expand=c(0,0)) +
+        scale_y_continuous(expand=c(0,0)) +
+        # Ecrire les facettes en haut sans background
+        theme(strip.background = element_blank(),
+              strip.text.x = element_text(size = 10, face = "italic", color = "black", hjust = 0),
+              strip.placement = "outside") +
+        # afficher les lignes des axes sur toutes les facettes
+        theme(panel.border = element_rect(colour = "black", fill=NA, size=0.5)) +
+    # limite entre les facettes
+        theme(panel.spacing = unit(2, "lines")) +
+        # gradiant legend : plot height
+        guides(fill = guide_colourbar(barheight = 5)) +
+        labs(y = "Latitude", x = "Year", fill = "Sapling number")
+```
+
+```{r}
+layout <- "
+AA
+BB
+C#
+"
+combination_plot2 + combination_plot4 + combination_plot3 + plot_layout(design = layout)
+```
