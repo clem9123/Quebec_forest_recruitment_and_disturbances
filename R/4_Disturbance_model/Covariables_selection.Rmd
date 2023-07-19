@@ -27,16 +27,13 @@ load("data/full_data.RData")
 # and scaling a dataframe with the scaling factor for each variables (mean and sd)
 full_data <- full_data %>% 
     mutate(n_perturb = is_logging + is_partial_logging + is_logging_pr + is_burn + is_outbreak) %>%
-    filter(dom_bio %in% c(4,5), n_perturb == 0)
-```
+    filter(n_perturb == 0)
 
-```{r}
 full_data$epmatorg_sc2 <- full_data$epmatorg_sc^2
 full_data$ph_humus_sc2 <- full_data$ph_humus_sc^2
 full_data$cmi_sum_sc2 <- full_data$cmi_sum_sc^2
 full_data$an_meanT_sc2 <- full_data$an_meanT_sc^2
 full_data$tree_nb_sp2 <- full_data$tree_nb_sp^2
-full_data <- full_data %>% group_by(id_pe) %>% mutate(prev_gaule = lag(all_cl))
 ```
 
 # 2. Models
@@ -44,12 +41,12 @@ full_data <- full_data %>% group_by(id_pe) %>% mutate(prev_gaule = lag(all_cl))
 Model : buldglmmTMB -> make the model and perform the step selection
 
 ```{r, message = FALSE, warning = FALSE, eval = FALSE}
-model_sp <- function(sp, part){
+model_sp1 <- function(sp, part){
     if(part == "presence"){
     return(buildglmmTMB(
         presence_gaule ~ epmatorg_sc + epmatorg_sc2 + ph_humus_sc + ph_humus_sc2 +
             an_meanT_sc + an_meanT_sc2 + tree_ba_sc +
-            tree_nb_sp + tree_nb_sp2 + cmi_sum_sc + cmi_sum_sc2 + texture +
+            tree_nb_sp + tree_nb_sp2 + cmi_sum_sc + cmi_sum_sc2 + soil +
             (1|id_pe),
         data = full_data %>% filter(sp_code == sp),
         family = binomial(link = "logit")))
@@ -58,8 +55,92 @@ model_sp <- function(sp, part){
     return(buildglmmTMB(
     all_cl ~ epmatorg_sc + epmatorg_sc2 + ph_humus_sc + ph_humus_sc2 +
         an_meanT_sc + an_meanT_sc2 + tree_ba_sc +
-        tree_nb_sp + tree_nb_sp2 + cmi_sum_sc + cmi_sum_sc2 + texture +
+        tree_nb_sp + tree_nb_sp2 + cmi_sum_sc + cmi_sum_sc2 + soil +
         (1|id_pe),
+    data = full_data %>% filter(sp_code == sp, presence_gaule == 1),
+    family = truncated_poisson(link = "log")))
+    }
+}
+
+model_sp2 <- function(sp, part){
+    if(part == "presence"){
+    return(buildglmmTMB(
+        presence_gaule ~ epmatorg_sc + epmatorg_sc2 + ph_humus_sc + ph_humus_sc2 +
+            an_meanT_sc + an_meanT_sc2 + tree_ba_sc +
+            tree_nb_sp + tree_nb_sp2 + cmi_sum_sc + cmi_sum_sc2 +
+            (1|id_pe),
+        data = full_data %>% filter(sp_code == sp),
+        family = binomial(link = "logit")))
+    }
+    if(part == "abundance"){
+    return(buildglmmTMB(
+    all_cl ~ epmatorg_sc + epmatorg_sc2 + ph_humus_sc + ph_humus_sc2 +
+            an_meanT_sc + an_meanT_sc2 + tree_ba_sc +
+            tree_nb_sp + tree_nb_sp2 + cmi_sum_sc + cmi_sum_sc2 +
+            (1|id_pe),
+    data = full_data %>% filter(sp_code == sp, presence_gaule == 1),
+    family = truncated_poisson(link = "log")))
+    }
+}
+
+model_sp3 <- function(sp, part){
+    if(part == "presence"){
+    return(buildglmmTMB(
+        presence_gaule ~ epmatorg_sc + ph_humus_sc +
+            an_meanT_sc + an_meanT_sc2 + tree_ba_sc +
+            tree_nb_sp + tree_nb_sp2 + cmi_sum_sc + cmi_sum_sc2 + soil +
+            (1|id_pe),
+        data = full_data %>% filter(sp_code == sp),
+        family = binomial(link = "logit")))
+    }
+    if(part == "abundance"){
+    return(buildglmmTMB(
+    all_cl ~ epmatorg_sc + ph_humus_sc +
+            an_meanT_sc + an_meanT_sc2 + tree_ba_sc +
+            tree_nb_sp + tree_nb_sp2 + cmi_sum_sc + cmi_sum_sc2 + soil +
+            (1|id_pe),
+    data = full_data %>% filter(sp_code == sp, presence_gaule == 1),
+    family = truncated_poisson(link = "log")))
+    }
+}
+
+model_sp4 <- function(sp, part){
+    if(part == "presence"){
+    return(buildglmmTMB(
+        presence_gaule ~ epmatorg_sc + epmatorg_sc2 + ph_humus_sc + ph_humus_sc2 +
+            an_meanT_sc + an_meanT_sc2 + tree_ba_sc +
+            is_species + cmi_sum_sc + cmi_sum_sc2 + soil +
+            (1|id_pe),
+        data = full_data %>% filter(sp_code == sp),
+        family = binomial(link = "logit")))
+    }
+    if(part == "abundance"){
+    return(buildglmmTMB(
+    all_cl ~ epmatorg_sc + epmatorg_sc2 + ph_humus_sc + ph_humus_sc2 +
+            an_meanT_sc + an_meanT_sc2 + tree_ba_sc +
+            is_species + cmi_sum_sc + cmi_sum_sc2 + soil +
+            (1|id_pe),
+    data = full_data %>% filter(sp_code == sp, presence_gaule == 1),
+    family = truncated_poisson(link = "log")))
+    }
+}
+
+model_sp5 <- function(sp, part){
+    if(part == "presence"){
+    return(buildglmmTMB(
+        presence_gaule ~ epmatorg_sc + ph_humus_sc +
+            an_meanT_sc + an_meanT_sc2 + tree_ba_sc +
+            is_species + cmi_sum_sc + soil +
+            (1|id_pe),
+        data = full_data %>% filter(sp_code == sp),
+        family = binomial(link = "logit")))
+    }
+    if(part == "abundance"){
+    return(buildglmmTMB(
+    all_cl ~ epmatorg_sc + ph_humus_sc +
+            an_meanT_sc + an_meanT_sc2 + tree_ba_sc +
+            is_species + cmi_sum_sc + soil +
+            (1|id_pe),
     data = full_data %>% filter(sp_code == sp, presence_gaule == 1),
     family = truncated_poisson(link = "log")))
     }
@@ -67,9 +148,11 @@ model_sp <- function(sp, part){
 ```
 
 ```{r, message = FALSE, warning = FALSE, eval = FALSE}
-for (s in Mysp){
-    for(p in c("presence", "abundance")){
-        assign(paste0(s, "_", p), model_sp(s,p))
+for (m in 1:5){
+    for (s in Mysp){
+        for(p in c("abundance")){
+            assign(paste0(s, "_", p,"_",m), get(paste0("model_sp", m))(s,p))
+        }
     }
 }
 ```
@@ -79,10 +162,10 @@ for (s in Mysp){
 ```{r, eval = FALSE}
 result <- data.frame()
 
-for(i in 1:5){
+for(m in 1:5){
     for (sp in Mysp){
         for(p in c("presence", "abundance")){
-            df <- data.frame(AIC = AIC(get(paste0(sp, "_", p, i))), sp_code = sp, part = p, model = i)
+            df <- data.frame(AIC = AIC(get(paste0(sp, "_", p, "_",m))), sp_code = sp, part = p, model = m)
             result <- rbind(result, df)
         }
     }
@@ -90,8 +173,8 @@ for(i in 1:5){
 saveRDS(result, "result.RDS")
 ```
 
-```{r, eval = FALSE}
-result <- readRDS("result.RDS")
+```{r, eval = FALSE} 
+#result <- readRDS("result.RDS")
 # pivot wider on models with AIC in columns named (AIC1, AIC2, AIC3, AIC4)
 result_wide <- result %>% pivot_wider(names_from = model, values_from = AIC)
 ```
@@ -177,16 +260,7 @@ Confirm the drop of selected variables by comparing all AIC
 ### All model AIC
 
 ```{r}
-sp_code <- c("ABIBAL", "ABIBAL", "ACERUB", "ACERUB", "ACESAC", "ACESAC", "BETALL", "BETALL", "PICMAR", "PICMAR", "PICGLA", "PICGLA", "BETPAP", "BETPAP", "POPTRE", "POPTRE")
-part <- c("presence", "abundance", "presence", "abundance", "presence", "abundance", "presence", "abundance", "presence", "abundance", "presence", "abundance", "presence", "abundance", "presence", "abundance")
-Model_1 <- c(3464, 16898, 1740, 1506, 880, 1228, 776, 360, 1972, 7635, 1773, 1027, 3105, 4610, 868, 527)
-Model_2 <- c(3471, 8861, 1740, 1506, 880, 1228, 774, 360, 1982, 7752, 1781, 740, 3105, 3272, 868, 527)
-Model_3 <- c(3479, 8793, 1740, 1506, 884, 1227, 774, 361, 1986, 7785, 1781, 734, 3104, 4670, 868, 524)
-Model_4 <- c(3485, 17012, 1740, 1512, 886, 1228, 797, 361, 1997, 7809, 1800, 740, 3146, 4771, 874, 524)
-Model_5 <- c(3469, 8777, 1739, 1506, 869, 1227, 774, 361, 1976, 7635, 1773, 1049, 3104, 3269, 867, 524)
-
-result_wide <- data.frame(sp_code, part, Model_1, Model_2, Model_3, Model_4, Model_5)
-result_wide %>% knitr::kable()
+View(result_wide)
 ```
 
 ## Model avec AIC le plus petit (ou < 2 de différence avec le plus petit)
@@ -195,7 +269,7 @@ Au départ je n'avais fait que les 4 premiers models
 
 ```{r}
 min_result <- result_wide %>%
-    pivot_longer(cols = c(Model_1, Model_2, Model_3, Model_4), names_to = "model", values_to = "AIC") %>%
+    pivot_longer(cols = c(`1`, `4`), names_to = "model", values_to = "AIC") %>%
     group_by(sp_code, part) %>% filter(AIC == min(AIC) | abs(AIC - min(AIC)) <= 2)
 table(min_result$model) %>% knitr::kable()
 ```

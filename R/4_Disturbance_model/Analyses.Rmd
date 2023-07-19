@@ -32,7 +32,7 @@ full_data <- full_data %>% filter(sp_code %in% Mysp, dom_bio %in% c(4,5))
 Load the models output for every species
 
 ```{r}
-Model_path = "output/"
+Model_path = "output/heavy/"
 for (sp in Mysp){
     assign(paste0("Model_", sp), readRDS(paste0(Model_path, sp, ".rds")))
 }
@@ -41,7 +41,7 @@ for (sp in Mysp){
 Load the function for making data from the models and plotting
 
 ```{r}
-source("R/8_Disturbance_model/function_analyses.R")
+source("R/4_Disturbance_model/function_analyses.R")
 ```
 
 # 2. Model output for all coefficients except disturbance related ones
@@ -51,6 +51,85 @@ source("R/8_Disturbance_model/function_analyses.R")
 all_param <- all_param_table()
 # Plot the results for all coefficients
 all_param_plot()
+```
+
+```{r}
+library(ggplot2)
+
+# Création d'un exemple de tableau de données
+data <- data.frame(
+  mean = c(1, 2, 3, 4, 5),
+  min = c(0, 1, 2, 3, 4),
+  max = c(2, 3, 4, 5, 6),
+  var = c("A", "A", "B", "B", "C"),
+  sp_code = c("X", "Y", "X", "Y", "X")
+)
+
+# Création du graphique
+ggplot(data, aes(x = sp_code, y = mean)) +
+  geom_point() +  # Utilisez geom_point() ou un autre type de géométrie souhaité
+  facet_grid(var ~ ., scales = "free_x") +  # Organise les facettes par variable
+  coord_flip() +  # Inverse les axes x et y
+  theme(panel.background = element_rect(fill = "white"),  # Définit la couleur de fond du panneau
+        panel.spacing = unit(0, "pt"),  # Ajuste l'espace entre les panneaux à zéro
+        panel.border = element_blank(),  # Supprime les bordures par défaut des panneaux
+        strip.background = element_blank(),  # Supprime le fond des étiquettes des facettes
+        strip.placement = "outside",  # Place les étiquettes des facettes à l'extérieur du graphique
+        strip.text.y = element_text(angle = 0, hjust = 0),  # Oriente le texte des étiquettes à 0 degré
+        plot.margin = margin(5, 5, 5, 5, "pt")) +  # Ajuste les marges du graphique  # Dessine les bordures des facettes
+
+```
+
+```{r}
+list_coef = 
+    c("Intercept", "Basal area", "Humus pH","Organic matter", "Temperature", "CMI", "Conspecific")
+ggplot(all_param %>% filter (var %in% list_coef, type == "pa")) +
+    geom_point(aes(x = sp, y = mean, color = var)) +
+    geom_linerange(aes(x = sp, ymin = min, ymax = max, color = var)) +
+    facet_wrap(~ var, strip.position = "left", ncol = 1) +
+    coord_flip() +
+    theme_bw() +
+    theme(strip.placement = "outside",
+        strip.background = element_blank(),
+        strip.text.y = element_text(angle = 0, hjust = 0.5),
+        # coller les facettes
+        panel.spacing = unit(0, "lines"),
+        # lignes de en haut et en bas des facettes en pointillées, que en haut
+        # juste un axe tout en bas et tout à gauche
+        axis.line = element_line(color = "black"),
+        axis.ticks = element_blank(),
+        axis.title.y = element_blank()) +
+    # axe vertical à 0
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    # ajouter des lignes entre les facettes
+    theme(panel.border = element_rect(color = "grey", fill = NA, size = 0.7)) +
+    labs(y = "Posterior distribution")
+```
+
+```{r}
+list_coef = 
+    c("Intercept", "Basal area", "Humus pH","Organic matter", "Temperature", "CMI", "Conspecific")
+ggplot(all_param %>% filter (var %in% list_coef, type == "nb")) +
+    geom_point(aes(x = sp, y = mean, color = var)) +
+    geom_linerange(aes(x = sp, ymin = min, ymax = max, color = var)) +
+    facet_wrap(~ var, strip.position = "left", ncol = 1) +
+    coord_flip() +
+    theme_bw() +
+    theme(strip.placement = "outside",
+        strip.background = element_blank(),
+        strip.text.y = element_text(angle = 0, hjust = 0.5),
+        # coller les facettes
+        panel.spacing = unit(0, "lines"),
+        # lignes de en haut et en bas des facettes en pointillées, que en haut
+        # juste un axe tout en bas et tout à gauche
+        axis.line = element_line(color = "black"),
+        axis.ticks = element_blank(),
+        axis.title.y = element_blank()) +
+    # axe vertical à 0
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    # ajouter des lignes entre les facettes
+    theme(panel.border = element_rect(color = "grey", fill = NA, size = 0.7)) +
+    labs(y = "Posterior distribution")
 ```
 
 Récupérer les distribution entières de tous les paramètres pour chaque espèce

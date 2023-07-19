@@ -47,18 +47,16 @@ model{
     for (i in 1:N){
     PRESENCE[i] ~ dbern(p[i])
 
-    p.env[i] <- pa_intercept +
+    logit(p[i]) <- 
+        pa_intercept +
         # soil
-        pa_epmatorg * EPMATORG[i] + pa_epmatorg2 * pow(EPMATORG[i],2) +
-        pa_ph * PH[i] + pa_ph2 * pow(PH[i],2) +
-        pa_texture[TEXTURE[i]] +
+        pa_epmatorg * EPMATORG[i] + pa_ph * PH[i] + pa_soil[SOIL[i]] +
         # climate
         pa_tmean * TMEAN[i] + pa_tmean2 * pow(TMEAN[i],2) +
         pa_cmi * CMI[i] + pa_cmi2 * pow(CMI[i],2) +
+        # biotic
         pa_ba * BA_res[i] +
-        pa_sp * NB_SP[i] + pa_sp2 * pow(NB_SP[i],2)
-
-    logit(p[i]) <- p.env[i] +
+        pa_sp * NB_SP[i] + pa_sp2 * pow(NB_SP[i],2) +
         # perturbation
         pa_l0[CL_L[i]] +
         pa_pl0[CL_PL[i]] +
@@ -75,11 +73,10 @@ model{
     pa_intercept ~ dunif(-50,50)
     # soil
     pa_epmatorg ~ dunif(-50,50)
-    pa_epmatorg2 ~ dunif(-50,50)
     pa_ph ~ dunif(-50,50)
-    pa_ph2 ~ dunif(-50,50)
-    for(i in 1:6){
-        pa_texture[i] ~ dunif(-50,50)
+    pa_soil[1] <- 0
+    for(i in 2:6){
+        pa_soil[i] ~ dunif(-50,50)
     }
     # climate
     pa_tmean ~ dunif(-50,50)
@@ -120,18 +117,18 @@ model{
     for (i in 1:N){
         DENSITE[i] ~ dpois(lambda[i] * PRESENCE[i] + 0.00001) T(PRESENCE[i],)
     
-    nb.env[i] <- nb_intercept +
+    log(lambda[i]) <- 
+        nb_intercept +
         # soil
-        nb_epmatorg * EPMATORG[i] + nb_epmatorg2 * pow(EPMATORG[i],2) +
-        nb_ph * PH[i] + nb_ph2 * pow(PH[i],2) +
-        nb_texture[TEXTURE[i]] +
+        nb_epmatorg * EPMATORG[i] +
+        nb_ph * PH[i] +
+        nb_soil[SOIL[i]] +
         # climate
         nb_tmean * TMEAN[i] + nb_tmean2 * pow(TMEAN[i],2) +
         nb_cmi * CMI[i] + nb_cmi2 * pow(CMI[i],2) +
+        # biotic
         nb_ba * BA_res[i] +
-        nb_sp * NB_SP[i] + nb_sp2 * pow(NB_SP[i],2)
-
-    log(lambda[i]) <- nb.env[i] +
+        nb_sp * NB_SP[i] + nb_sp2 * pow(NB_SP[i],2) +
         # perturbation
         nb_l0[CL_L[i]] +
         nb_pl0[CL_PL[i]] +
@@ -148,11 +145,10 @@ model{
     nb_intercept ~ dunif(-50,50)
     # soil
     nb_epmatorg ~ dunif(-50,50)
-    nb_epmatorg2 ~ dunif(-50,50)
     nb_ph ~ dunif(-50,50)
-    nb_ph2 ~ dunif(-50,50)
-    for(i in 1:6){
-        nb_texture[i] ~ dunif(-50,50)
+    nb_soil[1] <- 0
+    for(i in 2:6){
+        nb_soil[i] ~ dunif(-50,50)
     }
     # climate
     nb_tmean ~ dunif(-50,50)
@@ -187,16 +183,4 @@ model{
     #----------------------------------------#
     #          PREDICTION RESIDUS            #
     #----------------------------------------#
-
-    for (i in 1:N){
-    Pred_pa[i] ~ dbern(p[i])
-    Pred_nb[i] ~ dpois(lambda[i] * Pred_pa[i] + 0.00001) T(Pred_pa[i],)
-    Pred_nb2[i] ~ dpois(lambda[i] * PRESENCE[i] + 0.00001) T(PRESENCE[i],)
-    Res_pa[i] <- p[i] - PRESENCE[i]
-    Res_nb[i] <- lambda[i] - DENSITE[i]
-    #LogLik[i] <- log(dpois(DENSITE[i], lambda[i] * PRESENCE[i] + 0.001))
-    LogLik2[i] <- log(dpois(DENSITE[i], lambda[i] * p[i] + 0.00001))
-    }
-    #Log_likelihood = sum(LogLik)
-    Log_likelihood2 = sum(LogLik2)
 }

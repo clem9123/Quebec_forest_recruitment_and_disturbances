@@ -6,41 +6,20 @@ Run_jags <- function(sp, model_file, name, n.iter = 500){
     jags_data <- make_jags_data(sp)
     # 3. Run model
     param = c(
-        # ba
-        #"ba_intercept",
-        #"ba_l0", "ba_l1",
-        #"ba_pl0", "ba_pl1",
-        #"ba_lpr0", "ba_lpr1",
-        #"ba_b0", "ba_b1", "ba_b2",
-        #"ba_o0", "ba_o1",
-        #"mu_ba", "BA_res",s
-        # densite
-        "nb_intercept", "nb_altitude", "nb_epmatorg", "nb_ph", "nb_ph2","nb_epmatorg2",
-        "nb_cl_drai", "nb_tmean", "nb_cmi", "nb_species", "nb_year", "nb_ba", "nb_sp","nb_sp2",
-        "nb_tmean2", "nb_cmi2", "nb_texture",
-        "nb_l0", "nb_l1", "nb_l2",
-        "nb_pl0", "nb_pl1", "nb_pl2",
-        "nb_lpr0", "nb_lpr1", "nb_lpr2",
-        "nb_b0", "nb_b1", "nb_b2",
-        "nb_o0", "nb_o1", "nb_o2",
-        #"nb_placette",
-        "nb_taupl",
         # presence
-        "pa_intercept", "pa_altitude", "pa_epmatorg", "pa_epmatorg2",
-        "pa_ph", "pa_ph2", "pa_tmean2", "pa_cmi2", "pa_texture", "pa_sp","pa_sp2",
-        "pa_cl_drai", "pa_tmean", "pa_cmi", "pa_species", "pa_year", "pa_ba",
-        "pa_l0", "pa_l1", "pa_l2",
-        "pa_pl0", "pa_pl1", "pa_pl2",
-        "pa_lpr0", "pa_lpr1", "pa_lpr2",
-        "pa_b0", "pa_b1", "pa_b2",
-        "pa_o0", "pa_o1", "pa_o2",
-        #"pa_placette",
+        "pa_intercept",
+        "pa_epmatorg", "pa_ph", "pa_soil", 
+        "pa_tmean","pa_tmean2", "pa_cmi", "pa_cmi2",
+        "pa_sp","pa_sp2","pa_ba",
+        "pa_l0", "pa_pl0", "pa_lpr0", "pa_b0","pa_o0",
         "pa_taupl",
-        # Residus et prediction
-        "Res_pa", "Res_nb", "Pred_pa", "Pred_nb", "Pred_nb2",
-        "Log_likelihood", "Log_likelihood2"
-        # Autres
-        #"p", "lambda"
+        #abundance
+        "nb_intercept",
+        "nb_epmatorg", "nb_ph", "nb_soil",
+        "nb_tmean","nb_tmean2", "nb_cmi", "nb_cmi2",
+        "nb_sp","nb_sp2","nb_ba",
+        "nb_l0", "nb_pl0", "nb_lpr0", "nb_b0","nb_o0",
+        "nb_taupl"
     )
 
     out <- jags.parallel(
@@ -64,7 +43,7 @@ load("full_data.RData")
 
 # 2. Prepare data
 #----------------
-data <- full_data %>% filter(sp_code == sp, dom_bio %in% c(4,5)) %>% na.omit()
+data <- full_data %>% filter(sp_code == sp)
 # create the list of data to be used in the model
 jags_data <- list(
     # data to fit

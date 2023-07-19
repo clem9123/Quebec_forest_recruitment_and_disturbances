@@ -157,16 +157,16 @@ Table for all species and the two parts of the model :
 library("RColorBrewer")
 myPalette1 <- colorRampPalette(c("#1ee4e7", "#1ee4e7", "#17b91f", "#fffb00", "#e5a836", "#e26e10", "#c00606", "#670101"))
 # créer ma propre palette de couleur avec 20 couleurs et des plus grands écart de couleurs au début
-myPalette2 <- colorRampPalette(c("white","#001b92", "#1ee4e7", "#14af1c", "#fffb00", "#e5a836", "#e26e10", "#c00606", "#670101"))
-myPalette3 <- colorRampPalette(c("white","#001b92", "#1ee4e7", "#14af1c", "#fffb00", "#e5a836", "#e5a836","#e26e10", "#e26e10","#c00606", "#c00606", "#670101", "#670101"))
+myPalette2 <- colorRampPalette(c("white","#001b92","#1ee4e7", "#14af1c", "#fffb00", "#e5a836", "#e26e10", "#c00606", "#670101"))
+myPalette3 <- colorRampPalette(c("white","#1ee4e7", "#fffb00","#e5a836", "#c00606"))
 ```
 
 ```{r combination prediction plot}
 combination_plot <-
     ggplot(wd) +
-        aes(y = latitude, x = year_measured, fill = log(pred)) +
+        aes(y = latitude, x = year_measured, fill = (pred)) +
         geom_raster(interpolate = TRUE) +
-        scale_fill_gradientn(colours = myPalette1(200), labels = function(x) format(x, scientific = TRUE)) +
+        scale_fill_gradientn(colours = myPalette2(200), labels = function(x) format(x, scientific = TRUE)) +
         facet_wrap(~sp_code, labeller = as_labeller(c("ACERUB" = "A. rubrum", "ACESAC" = "A. saccharum",
                         "BETALL" = "B. alleghaniensis"))) +
         scale_x_continuous(expand=c(0,0)) +
@@ -181,7 +181,7 @@ combination_plot <-
         theme(panel.spacing = unit(2, "lines")) +
         # gradiant legend : plot height
         guides(fill = guide_colourbar(barheight = 20)) +
-        labs(y = "Latitude", x = "Year", fill = "log(Sapling number)")
+        labs(y = "Latitude", x = "Year", fill = "Sapling number")
 ```
 
 ```{r print combination plot}
@@ -235,11 +235,12 @@ wd$sp_code <- substr(wd$sp_code, 6, 11)
 ```
 
 ```{r combination prediction plot reste}
-combination_plot2 <-
-    ggplot(wd %>% filter(sp_code %in% c("ABIBAL", "PICMAR"))) +
-        aes(y = latitude, x = year_measured, fill = pred) +
+for (sp in Mysp){
+    assign(paste0("combination_plot_", sp),
+        ggplot(wd %>% filter(sp_code == sp)) +
+        aes(y = latitude, x = year_measured, fill = (pred)) +
         geom_raster(interpolate = TRUE) +
-        scale_fill_gradientn(colours = myPalette2(500), labels = function(x) format(x, scientific = TRUE)) +
+        scale_fill_gradientn(colours = myPalette3(20), labels = function(x) format(x, scientific = TRUE)) +
         facet_wrap(~sp_code, labeller = as_labeller(c("ABIBAL" = "A. balsamea", "PICMAR" = "P. mariana",
                         "PICGLA" = "P. glauca", "BETPAP" = "B. papyrifera", "POPTRE" = "P. tremuloides"))) +
         scale_x_continuous(expand=c(0,0)) +
@@ -253,57 +254,16 @@ combination_plot2 <-
     # limite entre les facettes
         theme(panel.spacing = unit(2, "lines")) +
         # gradiant legend : plot height
-        guides(fill = guide_colourbar(barheight = 5)) +
-        labs(y = "Latitude", x = "Year", fill = "Sapling number")
-
-combination_plot3 <-
-    ggplot(wd %>% filter(sp_code %in% c("BETPAP"))) +
-        aes(y = latitude, x = year_measured, fill = pred) +
-        geom_raster(interpolate = TRUE) +
-        scale_fill_gradientn(colours = myPalette2(500), labels = function(x) format(x, scientific = TRUE)) +
-        facet_wrap(~sp_code, labeller = as_labeller(c("ABIBAL" = "A. balsamea", "PICMAR" = "P. mariana",
-                        "PICGLA" = "P. glauca", "BETPAP" = "B. papyrifera", "POPTRE" = "P. tremuloides")), scale = "free") +
-        scale_x_continuous(expand=c(0,0)) +
-        scale_y_continuous(expand=c(0,0)) +
-        # Ecrire les facettes en haut sans background
-        theme(strip.background = element_blank(),
-              strip.text.x = element_text(size = 10, face = "italic", color = "black", hjust = 0),
-              strip.placement = "outside") +
-        # afficher les lignes des axes sur toutes les facettes
-        theme(panel.border = element_rect(colour = "black", fill=NA, size=0.5)) +
-    # limite entre les facettes
-        theme(panel.spacing = unit(2, "lines")) +
-        # gradiant legend : plot height
-        guides(fill = guide_colourbar(barheight = 5)) +
-        labs(y = "Latitude", x = "Year", fill = "Sapling number")
-
-combination_plot4 <-
-    ggplot(wd %>% filter(sp_code %in% c("POPTRE", "PICGLA"))) +
-        aes(y = latitude, x = year_measured, fill = pred) +
-        geom_raster(interpolate = TRUE) +
-        scale_fill_gradientn(colours = myPalette2(500), labels = function(x) format(x, scientific = TRUE)) +
-        facet_wrap(~sp_code, labeller = as_labeller(c("ABIBAL" = "A. balsamea", "PICMAR" = "P. mariana",
-                        "PICGLA" = "P. glauca", "BETPAP" = "B. papyrifera", "POPTRE" = "P. tremuloides")), scale = "free") +
-        scale_x_continuous(expand=c(0,0)) +
-        scale_y_continuous(expand=c(0,0)) +
-        # Ecrire les facettes en haut sans background
-        theme(strip.background = element_blank(),
-              strip.text.x = element_text(size = 10, face = "italic", color = "black", hjust = 0),
-              strip.placement = "outside") +
-        # afficher les lignes des axes sur toutes les facettes
-        theme(panel.border = element_rect(colour = "black", fill=NA, size=0.5)) +
-    # limite entre les facettes
-        theme(panel.spacing = unit(2, "lines")) +
-        # gradiant legend : plot height
-        guides(fill = guide_colourbar(barheight = 5)) +
-        labs(y = "Latitude", x = "Year", fill = "Sapling number")
+        guides(fill = guide_colourbar(barheight = 20)) +
+        labs(y = "Latitude", x = "Year", fill = "Sapling number"))
+}
 ```
 
 ```{r}
-layout <- "
-AA
-BB
-C#
-"
-combination_plot2 + combination_plot4 + combination_plot3 + plot_layout(design = layout)
+
+combination_plot_ABIBAL + 
+combination_plot_PICMAR + 
+combination_plot_PICGLA +
+combination_plot_BETPAP + 
+combination_plot_POPTRE
 ```

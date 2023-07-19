@@ -276,7 +276,7 @@ bioclim <- readRDS("data/final_data/bioclim_345.RDS") %>%
     data.frame() %>%
     select(-c(longitude, latitude, dom_bio, altitude, geometry)) %>%
     rbind(readRDS("data/final_data/bioclim_126789.RDS")) %>%
-    filter(id_pe %in% pep_xy$id_pe) %>% arrange(id_pe)
+    filter(id_pe %in% full_data$id_pe) %>% arrange(id_pe)
 
 meanT <- bioclim %>% dplyr::select(id_pe, year,  an_meanT) %>%
     pivot_wider(names_from = year, values_from = an_meanT) %>% arrange(id_pe) %>%
