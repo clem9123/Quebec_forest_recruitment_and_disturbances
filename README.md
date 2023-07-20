@@ -76,8 +76,9 @@ Output of the 8 individual model for each species was not uploaded here because 
 
 # A faire :
 
-- [ ] Telecherger les models finaux sur ripley
-- [ ] Mettre les figures dans un dossier `figures`
+- [x] Telecherger les models finaux sur ripley
+- [x] Mettre les figures dans un dossier `figures`
 - [ ] Faire les tableaux de corrspondances chiffre/signification pour les variables qualitatives (sol en particulier)
+- [ ] Plot les sorties du sol
 - [x] Rédiger le README
 - [ ] Faire des output utilisable : (tableau plus cours des résutats poir pouvoir les uploader sur Github dans output)
