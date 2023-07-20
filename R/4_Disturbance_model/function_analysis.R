@@ -13,12 +13,21 @@ all_param_table <- function(transform = FALSE){
     ## Make the table by taking the mean and quantile of each parameter distribution
     # -------------------------------------------------------------------
 
-    Coef = c("tmean", "epmatorg", "epmatorg2", "cmi", "ba", "intercept", "sp", "sp2", "ph", "ph2", "tmean2", "cmi2", "intercept")
+    Coef = c("tmean", "epmatorg", "epmatorg2", "cmi", "ba", "intercept", "ph", "ph2", "tmean2", "cmi2", "intercept")
+    # sp", "sp2", 
     all_param <- data.frame()
     for (sp in Mysp){
-        for (param in Coef){
-            for (part in c("pa","nb")){
-        model = get(paste0("Model_",sp))
+        for (part in c("pa","nb")){
+            model = get(paste0("Model_",sp))
+            distrib_param <- model$BUGSoutput$sims.list[paste0(part,"_", "sp")][[1]][,2]
+        all_param <- rbind(all_param, data.frame(
+            sp = sp,
+            mean = mean(distrib_param),
+            min = quantile(distrib_param, 0.025) %>% as.numeric(),
+            max = quantile(distrib_param, 0.975) %>% as.numeric(),
+            var = "sp",
+            type = part))
+            for (param in Coef){
         distrib_param <- model$BUGSoutput$sims.list[paste0(part,"_", param)][[1]]
         all_param <- rbind(all_param, data.frame(
             sp = sp,
@@ -39,6 +48,9 @@ all_param_table <- function(transform = FALSE){
 
     all_param <- all_param %>% mutate(sp = factor(sp, levels = c("ACERUB", "ACESAC", "BETALL", "BETPAP", "ABIBAL", "PICGLA", "PICMAR", "POPTRE")))
     # rename species with their scientific name
+    all_param <- all_param %>% mutate(type_sp = case_when(sp %in% c("ACERUB", "ACESAC", "BETALL") ~ "temperee",
+        sp %in% c("ABIBAL", "PICGLA", "PICMAR") ~ "boreale",
+        sp %in% c("BETPAP", "POPTRE") ~ "pionniere"))
     all_param <- all_param %>% 
         mutate(sp = case_when(
             sp == "ACERUB" ~ "A. rubrum",
@@ -52,8 +64,9 @@ all_param_table <- function(transform = FALSE){
     all_param <- all_param %>% mutate(var = factor(var, levels = c("sp","sp2","intercept", "ba", "ph", "ph2", "epmatorg", "epmatorg2", "cmi", "cmi2", "tmean", "tmean2"),
     labels = c("Conspecific", "Conspecific^2", "Intercept", "Basal area", "Humus pH", "Humus pH^2", "Organic matter" ,"Organic matter^2", "CMI", "CMI^2", "Mean temperature","Mean temperature^2")))
     all_param <- all_param %>% mutate(sp = factor(sp,
-        levels = c("A. rubrum", "A.saccharum",
-        " B. alleghaniensis", "P. tremuloides", "B. papyrifera", "A. balsamea", "P. glauca", "P. mariana")))
+        levels = rev(c("A. rubrum", "A.saccharum",
+        " B. alleghaniensis", "P. tremuloides", "B. papyrifera", "A. balsamea", "P. glauca", "P. mariana"))))
+
     return(all_param)
 }
 
@@ -109,7 +122,7 @@ p2 <- ggplot(all_param %>% filter(type == "nb", var %in% list_coef)) +
     p2 + labs(title = "Abondance"))
 }
 
-quadratic_table <- function(list_coef = c("cmi", "tmean", "epmatorg", "ph", "sp"), transform = FALSE){
+quadratic_table <- function(list_coef = c("cmi", "tmean"), transform = FALSE){
 
     ############################################################################
 

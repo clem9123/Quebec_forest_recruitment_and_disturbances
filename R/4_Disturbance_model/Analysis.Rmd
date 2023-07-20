@@ -32,7 +32,7 @@ full_data <- full_data %>% filter(sp_code %in% Mysp, dom_bio %in% c(4,5))
 Load the models output for every species
 
 ```{r}
-Model_path = "output/heavy/"
+Model_path = "output/heavy/no_ba/"
 for (sp in Mysp){
     assign(paste0("Model_", sp), readRDS(paste0(Model_path, sp, ".rds")))
 }
@@ -41,7 +41,7 @@ for (sp in Mysp){
 Load the function for making data from the models and plotting
 
 ```{r}
-source("R/4_Disturbance_model/function_analyses.R")
+source("R/4_Disturbance_model/function_analysis.R")
 ```
 
 # 2. Model output for all coefficients except disturbance related ones
@@ -54,38 +54,11 @@ all_param_plot()
 ```
 
 ```{r}
-library(ggplot2)
-
-# Création d'un exemple de tableau de données
-data <- data.frame(
-  mean = c(1, 2, 3, 4, 5),
-  min = c(0, 1, 2, 3, 4),
-  max = c(2, 3, 4, 5, 6),
-  var = c("A", "A", "B", "B", "C"),
-  sp_code = c("X", "Y", "X", "Y", "X")
-)
-
-# Création du graphique
-ggplot(data, aes(x = sp_code, y = mean)) +
-  geom_point() +  # Utilisez geom_point() ou un autre type de géométrie souhaité
-  facet_grid(var ~ ., scales = "free_x") +  # Organise les facettes par variable
-  coord_flip() +  # Inverse les axes x et y
-  theme(panel.background = element_rect(fill = "white"),  # Définit la couleur de fond du panneau
-        panel.spacing = unit(0, "pt"),  # Ajuste l'espace entre les panneaux à zéro
-        panel.border = element_blank(),  # Supprime les bordures par défaut des panneaux
-        strip.background = element_blank(),  # Supprime le fond des étiquettes des facettes
-        strip.placement = "outside",  # Place les étiquettes des facettes à l'extérieur du graphique
-        strip.text.y = element_text(angle = 0, hjust = 0),  # Oriente le texte des étiquettes à 0 degré
-        plot.margin = margin(5, 5, 5, 5, "pt")) +  # Ajuste les marges du graphique  # Dessine les bordures des facettes
-
-```
-
-```{r}
 list_coef = 
-    c("Intercept", "Basal area", "Humus pH","Organic matter", "Temperature", "CMI", "Conspecific")
+    c("Conspecific", "Basal area", "Humus pH","Organic matter", "Mean temperature", "CMI")
 ggplot(all_param %>% filter (var %in% list_coef, type == "pa")) +
-    geom_point(aes(x = sp, y = mean, color = var)) +
-    geom_linerange(aes(x = sp, ymin = min, ymax = max, color = var)) +
+    geom_point(aes(x = sp, y = mean, color = type_sp)) +
+    geom_linerange(aes(x = sp, ymin = min, ymax = max, color = type_sp)) +
     facet_wrap(~ var, strip.position = "left", ncol = 1) +
     coord_flip() +
     theme_bw() +
@@ -171,11 +144,8 @@ With prediction on data range for this parameters :
 # Extract the effect and their 95% confidence interval
 quadratic <- quadratic_table() # transform = TRUE will transform the data to the non-linear logit log scale
 # Plot the results for each quadratic parameters
-quadratic_plot("epmatorg")
 quadratic_plot("cmi")
 quadratic_plot("tmean")
-quadratic_plot("ph")
-quadratic_plot("sp")
 ```
 
 # 4. Model output for disturbances parameters
@@ -186,7 +156,7 @@ quadratic_plot("sp")
 disturbance_pa <- disturbance_table("pa", TRUE)
 disturbance_nb <- disturbance_table("nb", TRUE)
 # Plot the results
-disturbance_plot(disturbance_pa, 10)
+disturbance_plot(disturbance_pa, 20)
 disturbance_plot(disturbance_nb, 4)
 ```
 
@@ -196,7 +166,7 @@ Récupérer les distribution entières de tous les paramètres pour chaque espè
 # 5. Posteriors distribution
 
 ```{r}
-Coef <- c("nb_intercept", "nb_epmatorg", "nb_epmatorg2", "nb_ph", "nb_ph2",
+Coef <- c("nb_intercept", "nb_epmatorg", "nb_ph",
         "nb_tmean", "nb_tmean2", "nb_cmi", "nb_cmi2",
         #"nb_sp", "nb_sp2", "nb_year", "nb_ba",
         #"nb_l0", "nb_l1", "nb_l2",
@@ -204,7 +174,7 @@ Coef <- c("nb_intercept", "nb_epmatorg", "nb_epmatorg2", "nb_ph", "nb_ph2",
         #"nb_lpr0", "nb_lpr1", "nb_lpr2",
         #"nb_b0", "nb_b1", "nb_b2",
         #"nb_o0", "nb_o1", "nb_o2",
-        "pa_intercept", "pa_epmatorg", "pa_epmatorg2", "pa_ph", "pa_ph2",
+        "pa_intercept", "pa_epmatorg",  "pa_ph",
         "pa_tmean", "pa_tmean2", "pa_cmi", "pa_cmi2")
         #"pa_sp", "pa_sp2", "pa_year", "pa_ba",
         #"pa_l0", "pa_l1", "pa_l2",
@@ -225,10 +195,16 @@ for (sp in Mysp){
         posteriors <- rbind(posteriors, df)
     }
 }
+
+posteriors <- posteriors %>% mutate(part = substr(coef, 1,2))
 ```
 
 ```{r}
-ggplot(posteriors) +
+ggplot(posteriors %>% filter(part == "pa")) +
+    geom_density(aes(x = posterior, fill = sp_code), alpha = 0.5, show.legend = FALSE) +
+    facet_wrap(~coef, scales = "free") +
+    theme_bw() +
+ggplot(posteriors %>% filter(part == "nb")) +
     geom_density(aes(x = posterior, fill = sp_code), alpha = 0.5) +
     facet_wrap(~coef, scales = "free") +
     theme_bw()
@@ -242,7 +218,7 @@ dist_posteriors <- data.frame()
 for (sp in Mysp){
     model <- get(paste0("Model_", sp))
     for (c in Dist_coef){
-        df = data.frame(posterior = model$BUGSoutput$sims.list[paste0(c)][[1]][,2], sp_code = sp, coef = c,
+        df = data.frame(posterior = model$BUGSoutput$sims.list[paste0(c)][[1]][,3], sp_code = sp, coef = c,
             pa_intercept = model$BUGSoutput$sims.list["pa_intercept"][[1]],
             nb_intercept = model$BUGSoutput$sims.list["nb_intercept"][[1]])
         dist_posteriors <- rbind(dist_posteriors, df)
@@ -281,19 +257,6 @@ ggplot(dist_posteriors) +# %>% filter(perturb %in% c("Clearcut", "Partial cut"))
     # plus d'espace entre le texte des titres et axes et le graphe
     theme(plot.margin = unit(c(1,1,1,1), "cm")) +
     xlim(-5,5)
-
-ggplot(dist_posteriors) +# %>% filter(perturb %in% c("Clearcut", "Partial cut"))) +
-    geom_violin(aes(y = posterior, x = sp_type, color = sp_code), alpha = 0.55) +
-    facet_grid(part ~ perturb) +
-    scale_fill_manual(name = "Species type", values = c("#2e35f9", "#0cd53e", "#df2222")) +
-    theme_bw() +
-    # legend position : bottom
-    theme(legend.position = "bottom") +
-    # text plus grand
-    #theme(text = element_text(size = 20)) +
-    # plus d'espace entre le texte des titres et axes et le graphe
-    theme(plot.margin = unit(c(1,1,1,1), "cm")) +
-    ylim(-5,5)
 ```
 
 ```{r, include = FALSE}
