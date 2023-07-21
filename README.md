@@ -109,6 +109,8 @@ Output of the 8 individual model for each species was not uploaded here because 
 
 
 Simplifier les bordures de la carte (st simplify)
+- [ ] Faire des output utilisable : (tableau plus cours des résutats poir pouvoir les uploader sur Github dans output)*
+- [ ] Virer result.RDS
 
 # Question
 
