@@ -122,6 +122,34 @@ p2 <- ggplot(all_param %>% filter(type == "nb", var %in% list_coef)) +
     p2 + labs(title = "Abondance"))
 }
 
+soil_param_table <- function(){
+    ############################################################################
+
+    ### Function creating a table with distribution of parameters for the soil pa_soil[1:7] and nb_soil[1:7]
+    ### return a data.frame with the mean, min and max of the distribution of each parameter,
+    ### if the parameter is significatif or not (if the 95% CI cross 0 or not)
+    ### For each species and each model part (pa or nb)
+
+    ############################################################################
+
+    soil_param <- data.frame()
+    for (sp in Mysp){
+        for (part in c("pa","nb")){
+            model = get(paste0("Model_",sp))
+                for (i in 1:6){
+                distrib_param <- model$BUGSoutput$sims.list[paste0(part,"_", "soil")][[1]][,i] + model$BUGSoutput$sims.list[paste0(part,"_", "intercept")][[1]]
+                soil_param <- rbind(soil_param, data.frame(
+                    sp = sp,
+                    mean = mean(distrib_param),
+                    min = quantile(distrib_param, 0.025) %>% as.numeric(),
+                    max = quantile(distrib_param, 0.975) %>% as.numeric(),
+                    type = part,
+                    soil = i))
+    }}}
+    return(soil_param)
+}
+
+
 quadratic_table <- function(list_coef = c("cmi", "tmean"), transform = FALSE){
 
     ############################################################################

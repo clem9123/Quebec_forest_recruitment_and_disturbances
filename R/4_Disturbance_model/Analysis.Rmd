@@ -32,7 +32,7 @@ full_data <- full_data %>% filter(sp_code %in% Mysp, dom_bio %in% c(4,5))
 Load the models output for every species
 
 ```{r}
-Model_path = "output/heavy/no_ba/"
+Model_path = "output/heavy/output/"
 for (sp in Mysp){
     assign(paste0("Model_", sp), readRDS(paste0(Model_path, sp, ".rds")))
 }
@@ -130,6 +130,13 @@ ggplot(all_param_dist) + # %>% filter(part == "pa", coef == "ba"))+
     geom_violin(aes(y = posterior, x = sp_code), alpha = 0.5) +
     facet_grid(~coef, scales = "free") +
     theme_bw()
+```
+
+# Soil effect
+
+```{r}  
+soil_param <- soil_param_table()
+soil_param_plot()
 ```
 
 # 3. Model output for quadratic parameters
@@ -260,14 +267,14 @@ ggplot(dist_posteriors) +# %>% filter(perturb %in% c("Clearcut", "Partial cut"))
 ```
 
 ```{r, include = FALSE}
-traceplot(Model_ACERUB, var = "pa_intercept", ask = FALSE)
-traceplot(Model_ACESAC, var = "pa_intercept", ask = FALSE)
-traceplot(Model_BETALL, var = "pa_intercept", ask = FALSE)
-traceplot(Model_BETPAP, var = "pa_intercept", ask = FALSE)
-traceplot(Model_POPTRE, var = "pa_intercept", ask = FALSE)
-traceplot(Model_ABIBAL, var = "pa_intercept", ask = FALSE)
-traceplot(Model_PICMAR, var = "pa_intercept", ask = FALSE)
-traceplot(Model_PICGLA, var = "pa_intercept", ask = FALSE)
+traceplot(Model_ACERUB, var = "pa_intercept")
+traceplot(Model_ACESAC, var = "pa_intercept")
+traceplot(Model_BETALL, var = "pa_intercept")
+traceplot(Model_BETPAP, var = "pa_intercept")
+traceplot(Model_POPTRE, var = "pa_intercept")
+traceplot(Model_ABIBAL, var = "pa_intercept")
+traceplot(Model_PICMAR, var = "pa_intercept")
+traceplot(Model_PICGLA, var = "pa_intercept")
 ```
 
 Il faut que ça tourne un peu plus longtemps
@@ -303,4 +310,33 @@ neff <- sapply(Coef, function(x) {
 ```{r}
 Rhat
 neff
+```
+
+# Recherche erreur de convergence
+
+## Correlation présence espèce/temp...
+
+```{r}
+ggplot(full_data, aes(x = cmi_sum, y = is_species, color = sp_code)) +
+    geom_smooth(method = "glm", method.args = list(family = "binomial"), formula = y ~ poly(x,2), show.legend = FALSE) +
+    ylim(0,1) +
+ggplot(full_data, aes(x = cmi_sum, y = presence_gaule, color = sp_code)) +
+    geom_smooth(method = "glm", method.args = list(family = "binomial"), formula = y ~ poly(x,2)) +
+    ylim(0,1)
+```
+
+## Problème convergence perturbation (en particulier outbreak)
+
+```{r}
+full_data %>% filter(sp_code == "ABIBAL") %>% pull(cl_logging) %>%table()
+full_data %>% filter(sp_code == "ABIBAL") %>% pull(cl_outbreak) %>%table()
+full_data %>% filter(sp_code == "ABIBAL") %>% pull(cl_burn) %>%table()
+full_data %>% filter(sp_code == "ABIBAL") %>% pull(cl_partial_logging) %>%table()
+full_data %>% filter(sp_code == "ABIBAL") %>% pull(cl_logging_pr) %>%table()
+```
+
+```{r}
+ggplot(full_data %>% filter(is_outbreak == 1)) +
+    geom_bar(aes(x = cl_outbreak))
+
 ```

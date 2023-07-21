@@ -351,7 +351,7 @@ full_data <- full_data %>% data.frame() %>%
         burn <= 100 ~ 3,
         TRUE ~ 5),
     cl_outbreak = case_when(
-        outbreak == 0 ~ 6,
+        is_outbreak == 0 ~ 6,
         outbreak <= 5 ~ 4,
         outbreak <= 15 ~ 1,
         outbreak <= 25 ~ 2,

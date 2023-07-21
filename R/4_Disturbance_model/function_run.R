@@ -1,9 +1,9 @@
-Run_jags <- function(sp, model_file, name, n.iter = 500){
+Run_jags <- function(sp, model_file, name, n.iter = 500, path = "full_data.RData"){
     # 1. Start timer
     begin = Sys.time()
     print(begin)
     # 2. Load data
-    jags_data <- make_jags_data(sp)
+    jags_data <- make_jags_data(sp, path)
     # 3. Run model
     param = c(
         # presence
@@ -11,14 +11,14 @@ Run_jags <- function(sp, model_file, name, n.iter = 500){
         "pa_epmatorg", "pa_ph", "pa_soil", 
         "pa_tmean","pa_tmean2", "pa_cmi", "pa_cmi2",
         "pa_sp","pa_sp2","pa_ba",
-        "pa_l0", "pa_pl0", "pa_lpr0", "pa_b0","pa_o0",
+        "pa_l", "pa_pl", "pa_lpr", "pa_b","pa_o",
         "pa_taupl",
         #abundance
         "nb_intercept",
         "nb_epmatorg", "nb_ph", "nb_soil",
         "nb_tmean","nb_tmean2", "nb_cmi", "nb_cmi2",
         "nb_sp","nb_sp2","nb_ba",
-        "nb_l0", "nb_pl0", "nb_lpr0", "nb_b0","nb_o0",
+        "nb_l", "nb_pl", "nb_lpr", "nb_b","nb_o",
         "nb_taupl"
     )
 
@@ -37,13 +37,13 @@ Run_jags <- function(sp, model_file, name, n.iter = 500){
     # 5. Save results
     saveRDS(out, file = paste0(name, "", sp, ".rds"))}
 
-make_jags_data <- function(sp){
+make_jags_data <- function(sp, path){
 
-load("full_data.RData")
+load(path)
 
 # 2. Prepare data
 #----------------
-data <- full_data %>% filter(sp_code == sp)
+data <- full_data %>% filter(sp_code == sp, dom_bio == 4) %>% sample_n(2000)
 # create the list of data to be used in the model
 jags_data <- list(
     # data to fit
@@ -51,10 +51,6 @@ jags_data <- list(
     PRESENCE = data$presence_gaule, # is_recrues
     DENSITE = data$all_cl, # recrues
     # variables
-    YEAR = data$year_measured_sc,
-    LATITUDE = data$latitude_sc,
-    LONGITUDE = data$longitude_sc,
-    ALTITUDE = data$altitude_sc,
     EPMATORG = data$epmatorg_sc,
     PH = data$ph_humus_sc,
     BA = data$tree_ba_sc,
@@ -72,11 +68,9 @@ jags_data <- list(
     IS_O = data$is_outbreak,
     PLACETTE = data$id_pe_sc,
     N_PLACETTE = max(data$id_pe_sc),
-    CL_DRAI = data$cl_drai_sc,
-    TEXTURE = data$texture_sc,
     TMEAN = data$an_meanT_sc,
     CMI = data$cmi_sum_sc,
-    TEXTURE = as.numeric(data$texture_sc),
+    SOIL = as.numeric(data$soil),
     CL_L = data$cl_logging,
     CL_PL = data$cl_partial_logging,
     CL_LPR = data$cl_logging_pr,

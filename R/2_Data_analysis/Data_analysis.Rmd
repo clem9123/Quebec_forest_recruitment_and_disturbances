@@ -701,3 +701,13 @@ ggplot(full_data) +
     geom_point(aes(x = latitude, y = (ph_humus))) +
     geom_smooth(aes(x = latitude, y = (ph_humus)), method = "lm", se = FALSE)
 ```
+
+```{r}
+ggplot(full_data %>% filter(sp_code == "ACERUB")) +
+    geom_point(aes(y = is_species, x = an_meanT)) +
+    geom_smooth(aes(y = is_species, x = an_meanT), method = "glm", method.args = list(family = "binomial"), formula = y ~ poly(x,2))
+```
+
+```{r}
+
+```

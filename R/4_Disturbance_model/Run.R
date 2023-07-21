@@ -17,7 +17,7 @@ clusterExport(cl, c("make_jags_data", "Run_jags", "Myspecies"),
 clusterEvalQ(cl, c(library(tidyverse), library(R2jags)))
 
 
-parLapply(cl, Myspecies, function(x) Run_jags(x, "Model.txt", "output/", n.iter = 4000))
+parLapply(cl, Myspecies, function(x) Run_jags(x, "Model.txt", "output/", n.iter = 500))
 
 stopCluster(cl)
     
@@ -30,9 +30,12 @@ print("finish running")
 
 
 ## library
-#library(tidyverse)
-#library(R2jags)
+library(tidyverse)
+library(R2jags)
 ## function
-#source("R/8_Disturbance_model/function_run.R")
+source("R/4_Disturbance_model/function_run.R")
 ## run
-#Run_jags("PICGLA", "R/8_Disturbance_model/Model.txt", "output", n.iter = 200)
+Run_jags("ACERUB", "R/4_Disturbance_model/Model.txt", "output/heavy/2", n.iter = 2000, "data/full_data.RData")
+
+out = readRDS("output/heavy/2ACERUB.rds")
+traceplot(out, var = "pa_intercept")

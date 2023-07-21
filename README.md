@@ -35,6 +35,21 @@ See beginning or `R/1_Make_data/tree_pep.R`
 Then all selection and modification on this data are made with the files from
 `R/1_Make_data` (have to bee run in order), the output dataframe is `data/full_data.RDS` and is the one I used for all following analyses
 
+#### Code in data
+
+Table correspondance soil numberc :
+
+|Code | Soil caracteristics |
+|-----|----------|
+| 1 | dépôt très mince, de texture variée et de drainage de xérique à hydrique |
+| 2 | 
+| 3 | 
+| 4 | 
+| 5 | 
+| 6 | 
+
+
+
 ### Analyses
 
 #### 1. Analyses of the data : `R/2_Data_analysis`
@@ -82,3 +97,10 @@ Output of the 8 individual model for each species was not uploaded here because 
 - [ ] Plot les sorties du sol
 - [x] Rédiger le README
 - [ ] Faire des output utilisable : (tableau plus cours des résutats poir pouvoir les uploader sur Github dans output)
+
+# Question
+
+- problème de convergence de l'intercept
+- Les textures sont pas clair pour moi, je comprends pas trop ce que chaque chiffre veut dire
+- Quel visuel pour les sorties (à fixer définitivement)
+- What to do in the text ?
