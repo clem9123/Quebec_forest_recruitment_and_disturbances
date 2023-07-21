@@ -41,7 +41,7 @@ Table correspondance soil numberc :
 
 |Code | Soil caracteristics |
 |-----|----------|
-| 1 | dépôt très mince, de texture variée et de drainage de xérique à hydrique |
+| 1 | de texture grossière et de drainage xérique ou mésique |
 | 2 | 
 | 3 | 
 | 4 | 
@@ -91,16 +91,41 @@ Output of the 8 individual model for each species was not uploaded here because 
 
 # A faire :
 
+- [ ] CONVERGENCE
+
+
+
+
+
+
 - [x] Telecherger les models finaux sur ripley
 - [x] Mettre les figures dans un dossier `figures`
 - [ ] Faire les tableaux de corrspondances chiffre/signification pour les variables qualitatives (sol en particulier)
 - [ ] Plot les sorties du sol
 - [x] Rédiger le README
-- [ ] Faire des output utilisable : (tableau plus cours des résutats poir pouvoir les uploader sur Github dans output)
+- [ ] Faire des output utilisable : (tableau plus cours des résutats poir pouvoir les uploader sur Github dans output) : les sorties des paramères (mean, min and mean)
+- [ ] Figure parametre : espèce en italique + nom en anglais (eventuellement density plot)
+- [x] Check correlation entre soil, ph et epmatorg
+
+
+Simplifier les bordures de la carte (st simplify)
 
 # Question
 
 - problème de convergence de l'intercept
-- Les textures sont pas clair pour moi, je comprends pas trop ce que chaque chiffre veut dire
-- Quel visuel pour les sorties (à fixer définitivement)
-- What to do in the text ?
+- Quel visuel pour les sorties ?
+- What to do in the text ? Ref, ecrire priors
+
+# Sub-model BA
+
+| with BA sub model  |  without BA sub model |
+|--------------------|-----------------------|
+|        179325.72   |             180250.71 |
+|         95652.49   |              95603.13 |
+|         79111.98   |              79202.24 |
+|         85415.10   |              85466.13 |
+|        125876.68   |             126024.51 |
+|         84753.54   |              84786.29 |
+|        117718.97   |             117585.83 |
+|         87105.70   |              86826.04 |
+|--------------------|-----------------------|

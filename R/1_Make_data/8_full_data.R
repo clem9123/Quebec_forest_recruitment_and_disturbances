@@ -83,7 +83,7 @@ data <- data %>% mutate(presence_gaule = ifelse(all_cl > 0, 1, 0))
 env_data <- env_data %>%
     left_join(
         pep_pe %>% 
-        mutate(soil = ifelse(type_eco== "ND", NA, substr(type_eco, 3, 3))) %>% 
+        mutate(soil = ifelse(type_eco== "ND", NA, substr(type_eco, 4, 4))) %>% 
         select(id_pe, soil),
         all.x = TRUE)
 

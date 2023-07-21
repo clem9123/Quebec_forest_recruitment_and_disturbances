@@ -32,10 +32,15 @@ full_data <- full_data %>% filter(sp_code %in% Mysp, dom_bio %in% c(4,5))
 Load the models output for every species
 
 ```{r}
-Model_path = "output/heavy/output/"
+Model_path = "output/heavy/is_species/"
 for (sp in Mysp){
     assign(paste0("Model_", sp), readRDS(paste0(Model_path, sp, ".rds")))
 }
+
+# DIC pour chaque model
+DIC2 <- sapply(Mysp, function(x) {
+    data.frame(get(paste0("Model_", x))$BUGSoutput$DIC)
+})
 ```
 
 Load the function for making data from the models and plotting
@@ -339,4 +344,11 @@ full_data %>% filter(sp_code == "ABIBAL") %>% pull(cl_logging_pr) %>%table()
 ggplot(full_data %>% filter(is_outbreak == 1)) +
     geom_bar(aes(x = cl_outbreak))
 
+```
+
+## Correlation soil ph epmatorg
+
+```{r}
+library(corrplot)
+full_data %>% mutate(soil = as.numeric(soil)) %>% select(soil, ph_humus, epmatorg) %>% cor() %>% corrplot(method = "number")
 ```
