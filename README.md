@@ -96,7 +96,8 @@ Output of the 8 individual model for each species was not uploaded here because 
 - [ ] Faire les tableaux de corrspondances chiffre/signification pour les variables qualitatives (sol en particulier)
 - [ ] Plot les sorties du sol
 - [x] Rédiger le README
-- [ ] Faire des output utilisable : (tableau plus cours des résutats poir pouvoir les uploader sur Github dans output)
+- [ ] Faire des output utilisable : (tableau plus cours des résutats poir pouvoir les uploader sur Github dans output)*
+- [ ] Virer result.RDS
 
 # Question
 
