@@ -47,13 +47,14 @@ Highlights should be submitted in a separate editable file in the online submiss
 
 # Abstract (max 400 mots) 
 
-Context: Climate change poses challenges to tree populations, leading to responses such as evolution, migration, and extinction. In Quebec Forest, despite migration, tree species do not reach their optimal climatic niche. Understanding tree establishment patterns in this transitional zone between temperate and boreal forests is crucial for adapted forest management. 
 
-Method: We examined the impact of disturbances on tree regeneration and colonization using a Bayesian hurdle model with presence and abundance data from 1970 to 2021. 
+Context. Tree recruitment is a critical step to initiate species range shifts in forest under climate change. While non-climatic factors may slow down sapling establishment, canopy disturbances may promote episodic recruitment pulses of migrating species. Yet, our understanding of how different factors control tree recruitment dynamics at range margins remains limited.
 
-Results: We found a significant range shifts for temperate species, with a predominant influence of conspecific adult presence. Disturbances had diverse effects, generally benefiting Acer rubrum (red maple), while total disturbances had a positive impact on early succession species and partial cut favored temperate species to a greater extent. 
+Method. We analyzed forest inventory data sampled from 1970 to 2021 in Quebec, Canada, to study the effect of different disturbances on the recruitment dynamics of saplings (1 to 3 cm in diameter). For each of the most abundant species in the boreal-temperate ecotone, we fitted a Bayesian hurdle model on presence and abundance data to quantify the role of climate, disturbances, and stand characteristics.
 
-Conclusion: Shaping disturbance patterns could promote certain species and facilitate latitudinal shift.  However, the importance of conspecific adult presence suggests that additional measures, such as assisted migration through plantation, may be necessary to ensure the continuity of ecosystem services. 
+Results. Significant shifts in the distribution of temperate species northwards were observed. Recruitment was primarily influenced by the presence of conspecific adults, while disturbances had diverse effects. Clearcut and fires had a short-term positive impact on pioneer species, whereas partial cuts promoted the recruitment of temperate species. Red maple (*Acer rubrum*), a generalist and opportunistic temperate species, particularly benefited from all types of disturbances.
+
+Conclusion. Temporal patterns of sapling recruitment provided an early signal of northward migrations of temperate tree species and indicated that important compositional changes are underway. However, disturbances can influence the magnitude and direction of these range shifts and should thus be considered in projections of future species distribution. While partial cuts favors the recruitment of temperate species at their northern limit, fires, limited dispersal, and edaphic conditions can greatly reduce their potential migrations.
 
 # Keywords 
 
@@ -62,6 +63,39 @@ Climate change, Disturbances, Harvesting, Fire, Northward range shifts, Québec 
 \pagebreak
 
 # Introduction
+
+## p1: recruitment = critical step to migration
+
+Climate change significantly impacts the entire tree life cycle, from recruitment to growth and mortality [@vanderwel_climate-related_2013; @zhang_half-century_2015], resulting in modifications to population dynamics and species distribution. Given the long-term nature of growth and mortality processes, recruitment is expected to be the primary driver of climate-induced shifts [**REF**]. While adult trees may survive for a long time in suboptimal conditions, juvenile trees are more sensitive to environmental variation (**Walck et al. 2011**) and can therefore serve as an early indicator of species distribution shifts in response to climate warming [@anderson-teixeira_altered_2013; @zhu_failure_2012; @boisvert-marsh_shifting_2014; @sittaro_tree_2017]. Indeed, temperate tree species in Québec have shown northward shifts in their range limits, with saplings displaying more pronounced changes than adult trees [@boisvert-marsh_shifting_2014; @sittaro_tree_2017]. However, @sittaro_tree_2017 reported that these latitudinal shifts were weakly correlated with climate warming, and @boisvertmarsh_divergent_2019 revealed mixed effects of climate change variables on sapling recruitment at range margins, suggesting that tree responses are influenced by a complex interplay of environmental drivers [@solarik_priority_2019; @carteron_soil_2020; @boisvertmarsh_divergent_2019; @leithead_northward_2010]. As successful recruitments beyond current range limits determine tree migration [@renwick_temporal_2015], understanding the conditions that facilitate or impede sapling establishment becomes pivotal in predicting future tree species distributions [@copenhaverparry_multiscale_2020].
+
+*presence vs abundance*
+
+
+## p2: disturbances = catalyst or impediment
+
+Disturbances play a key role in shaping forest composition, influencing forest landscapes at all scales (Goldblum and Rigg 2010). They can trigger pulse recruitment events, creating sudden light and space availability that facilitates the establishment of new plant species. The characteristics of disturbances, including type, frequency, severity, and size, have diverse impacts on different species, depending on their trait, leading to spatial heterogeneity in species distribution (Turner 2010). For example, stand-replacing fire typically favors the return of fire-adapted species like those with (semi-)serotinous cones (e.g., jack pine and black spruce). In contrast, clearcuts, despite being assumed to reproduce the effects of frequent and severe fires in boreal forests [@bergeron_natural_2002], tend to promote a dominance of intolerant hardwood species over coniferous species [@mcrae_comparisons_2001].
+
+Disturbances can interact with climate change, altering future succession trajectories as climate change affects both disturbance regimes and post-disturbance regeneration. For instance, Brice et al. (2019) has shown that moderate disturbances (removing 25-75% of the basal area), whether natural or anthropogenic, can accelerate the response of tree communities to climate change, promoting the transition from mixed to temperate forests in Quebec. 
+However, despite their importance, the effects of different disturbances on tree recruitment dynamics in transition zones and how it can affect species distribution remain poorly understood.
+While theoretical studies such as Liang et al. (2018) have suggested minimal effects of disturbances on biome shifts, empirical studies have drawn varying conclusions: i) facilitation of temperate species establishment in Ontario mixed forests (Leithead et al. 2010); ii) no effect on sapling range shifts in the United States (Woodall et al. 2013). Interestingly, @boisvertmarsh_divergent_2019 specifically analyzed sapling occurrence gain between two time periods in Québec and found that it was more strongly influenced by climate change than by disturbances. However, their use of coarse disturbance classification (natural vs. logging) may obscure some nuance in species responses. As post-disturbance recruitment significantly influence future succession trajectories, understanding their dynamics is essential for predicting forest composition and informing effective forest management strategies.
+
+*novelty* = TSD, distinguish disturbance types, presence and abundance
+
+
+## p3: migration lag and other factors
+
+Despite a pressing need to be able to predict the effects of climate change on the distribution and abundance of temperate tree species, we still have only rudimentary understanding of how these different factors interplay to affect recruitment processes.
+
+It seems clear that climate must play a preeminent role in at least the range boundaries of temperate tree species (Simova et al. 2015), but it is much less clear how important climate is in determining the spatial distribution and abundance of a species within its range, particularly given the myriad other factors that influence the presence and abundance of tree species within a stand (Morin et al. 2007).
+
+## models...
+
+Many models...
+But these models typically ignore recruitment processes and species interactions that may result in strong inertia in community composition under climate change, and they ignore the expected successional trajectories that have been triggered by natural and human disturbances. 
+
+Apart from the recent range shift studies, juveniles remain an understudied life stage. Moreover, even though forests have benefited from a great attention and modelling effort due to their economic importance, juvenile stages are often oversimplified (Greene et al. 1999). Since only merchantable size trees are considered in management studies, any discrepancy between the overstory and the understory are discarded. However, multiple studies have found that tree population dynamics  are highly dependent on recruitment (Brown and Wu 2005) and that the accuracy of forest models is increased by including the dynamics of seedlings and saplings (Rijal et al. 2022). 
+
+p4: objectives
 
 # Materials and Methods 
 
