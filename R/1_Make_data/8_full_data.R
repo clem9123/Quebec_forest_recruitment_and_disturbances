@@ -78,12 +78,12 @@ data <- data %>% mutate(is_species = ifelse(tree_nb_sp >0, 1, 0))
 data <- data %>% mutate(presence_gaule = ifelse(all_cl > 0, 1, 0))
 
 ### Add environmental data
-
+table(pep_pe$type_eco)
 # Add column with soil texture and drainage index (from first number caracter of column type eco)
 env_data <- env_data %>%
     left_join(
         pep_pe %>% 
-        mutate(soil = ifelse(type_eco== "ND", NA, substr(type_eco, 4, 4))) %>% 
+        mutate(soil = ifelse(type_eco== "ND", NA, as.numeric(substr(type_eco, 4, 4)) + 1)) %>% 
         select(id_pe, soil),
         all.x = TRUE)
 

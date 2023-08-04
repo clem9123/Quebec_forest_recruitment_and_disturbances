@@ -94,10 +94,6 @@ Output of the 8 individual model for each species was not uploaded here because 
 - [ ] CONVERGENCE
 
 
-
-
-
-
 - [x] Telecherger les models finaux sur ripley
 - [x] Mettre les figures dans un dossier `figures`
 - [ ] Faire les tableaux de corrspondances chiffre/signification pour les variables qualitatives (sol en particulier)

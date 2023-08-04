@@ -79,7 +79,7 @@ model{
     pa_epmatorg ~ dunif(-50,50)
     pa_ph ~ dunif(-50,50)
     pa_soil[1] <- 0
-    for(i in 2:6){
+    for(i in 2:10){
         pa_soil[i] ~ dunif(-50,50)
     }
     # climate
@@ -151,7 +151,7 @@ model{
     nb_epmatorg ~ dunif(-50,50)
     nb_ph ~ dunif(-50,50)
     nb_soil[1] <- 0
-    for(i in 2:6){
+    for(i in 2:10){
         nb_soil[i] ~ dunif(-50,50)
     }
     # climate

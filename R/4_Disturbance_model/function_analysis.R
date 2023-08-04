@@ -13,20 +13,12 @@ all_param_table <- function(transform = FALSE){
     ## Make the table by taking the mean and quantile of each parameter distribution
     # -------------------------------------------------------------------
 
-    Coef = c("tmean", "epmatorg", "epmatorg2", "cmi", "ba", "intercept", "ph", "ph2", "tmean2", "cmi2", "intercept")
+    Coef = c("tmean", "epmatorg", "epmatorg2", "cmi", "ba", "intercept", "ph", "ph2", "tmean2", "cmi2")
     # sp", "sp2", 
     all_param <- data.frame()
     for (sp in Mysp){
         for (part in c("pa","nb")){
             model = get(paste0("Model_",sp))
-            distrib_param <- model$BUGSoutput$sims.list[paste0(part,"_", "sp")][[1]][,2]
-        all_param <- rbind(all_param, data.frame(
-            sp = sp,
-            mean = mean(distrib_param),
-            min = quantile(distrib_param, 0.025) %>% as.numeric(),
-            max = quantile(distrib_param, 0.975) %>% as.numeric(),
-            var = "sp",
-            type = part))
             for (param in Coef){
         distrib_param <- model$BUGSoutput$sims.list[paste0(part,"_", param)][[1]]
         all_param <- rbind(all_param, data.frame(
@@ -36,7 +28,18 @@ all_param_table <- function(transform = FALSE){
             max = quantile(distrib_param, 0.975) %>% as.numeric(),
             var = param,
             type = part))
-    }}}
+    }
+            ## pour conspecific
+            distrib_param <- model$BUGSoutput$sims.list[paste0(part,"_","intercept")][[1]][,2] - model$BUGSoutput$sims.list[paste0(part,"_","intercept")][[1]][,1]
+            all_param <- rbind(all_param, data.frame(
+                sp = sp,
+                mean = mean(distrib_param),
+                min = quantile(distrib_param, 0.025) %>% as.numeric(),
+                max = quantile(distrib_param, 0.975) %>% as.numeric(),
+                var = "sp",
+                type = part))
+            }
+    }
 
     # Add significance (95%) and effect (+/-)
     all_param <- all_param %>%
@@ -48,9 +51,9 @@ all_param_table <- function(transform = FALSE){
 
     all_param <- all_param %>% mutate(sp = factor(sp, levels = c("ACERUB", "ACESAC", "BETALL", "BETPAP", "ABIBAL", "PICGLA", "PICMAR", "POPTRE")))
     # rename species with their scientific name
-    all_param <- all_param %>% mutate(type_sp = case_when(sp %in% c("ACERUB", "ACESAC", "BETALL") ~ "temperee",
-        sp %in% c("ABIBAL", "PICGLA", "PICMAR") ~ "boreale",
-        sp %in% c("BETPAP", "POPTRE") ~ "pionniere"))
+    all_param <- all_param %>% mutate(type_sp = case_when(sp %in% c("ACERUB", "ACESAC", "BETALL") ~ "Temperate",
+        sp %in% c("ABIBAL", "PICGLA", "PICMAR") ~ "Boreal",
+        sp %in% c("BETPAP", "POPTRE") ~ "Pionner"))
     all_param <- all_param %>% 
         mutate(sp = case_when(
             sp == "ACERUB" ~ "A. rubrum",
@@ -61,8 +64,8 @@ all_param_table <- function(transform = FALSE){
             sp == "ABIBAL" ~ "A. balsamea",
             sp == "PICGLA" ~ "P. glauca",
             sp == "PICMAR" ~ "P. mariana"))
-    all_param <- all_param %>% mutate(var = factor(var, levels = c("sp","sp2","intercept", "ba", "ph", "ph2", "epmatorg", "epmatorg2", "cmi", "cmi2", "tmean", "tmean2"),
-    labels = c("Conspecific", "Conspecific^2", "Intercept", "Basal area", "Humus pH", "Humus pH^2", "Organic matter" ,"Organic matter^2", "CMI", "CMI^2", "Mean temperature","Mean temperature^2")))
+    all_param <- all_param %>% mutate(var = factor(var, levels = c("sp", "ba", "ph", "ph2", "epmatorg", "epmatorg2", "cmi", "cmi2", "tmean", "tmean2"),
+    labels = c("Conspecific", "Basal area", "Humus pH", "Humus pH^2", "Organic matter" ,"Organic matter^2", "CMI", "CMI^2", "Mean temperature","Mean temperature^2")))
     all_param <- all_param %>% mutate(sp = factor(sp,
         levels = rev(c("A. rubrum", "A.saccharum",
         " B. alleghaniensis", "P. tremuloides", "B. papyrifera", "A. balsamea", "P. glauca", "P. mariana"))))
@@ -185,7 +188,7 @@ quadratic_table <- function(list_coef = c("cmi", "tmean"), transform = FALSE){
     for (species in Mysp){
         model <- get(paste0("Model_", species))
         for (part in c("pa","nb")){
-            intercept = model$BUGSoutput$sims.list[paste0(part,"_intercept")][[1]]
+            intercept = model$BUGSoutput$sims.list[paste0(part,"_intercept")][[1]][,1]
             for (param in list_coef){
                 value = get(param)
                 value_sc = get(paste0(param, "_sc"))
@@ -274,7 +277,7 @@ disturbance_table <- function(part, scatter = TRUE){
         model <- get(paste0("Model_", sp))
             for (t in 1:6){
                 for (perturb in c("l", "pl", "b","o","lpr")){
-                    coefficient <- model$BUGSoutput$sims.list[paste0(part,"_", perturb, "0")][[1]][,t]
+                    coefficient <- model$BUGSoutput$sims.list[paste0(part,"_", perturb)][[1]][,t]
                     mean = mean(coefficient) %>% as.numeric()
                     min = quantile(coefficient, 0.025) %>% as.numeric()
                     max = quantile(coefficient, 0.975) %>% as.numeric()

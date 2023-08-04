@@ -43,7 +43,7 @@ load(path)
 
 # 2. Prepare data
 #----------------
-data <- full_data %>% filter(sp_code == sp, dom_bio == 4) %>% sample_n(2000)
+data <- full_data %>% filter(sp_code == sp) %>% sample_n(2000)
 # create the list of data to be used in the model
 jags_data <- list(
     # data to fit

@@ -32,15 +32,15 @@ full_data <- full_data %>% filter(sp_code %in% Mysp, dom_bio %in% c(4,5))
 Load the models output for every species
 
 ```{r}
-Model_path = "output/heavy/is_species/"
+Model_path = "output/heavy/output/"
 for (sp in Mysp){
     assign(paste0("Model_", sp), readRDS(paste0(Model_path, sp, ".rds")))
 }
 
 # DIC pour chaque model
-DIC2 <- sapply(Mysp, function(x) {
-    data.frame(get(paste0("Model_", x))$BUGSoutput$DIC)
-})
+#DIC2 <- sapply(Mysp, function(x) {
+#    data.frame(get(paste0("Model_", x))$BUGSoutput$DIC)
+#})
 ```
 
 Load the function for making data from the models and plotting
@@ -60,7 +60,7 @@ all_param_plot()
 
 ```{r}
 list_coef = 
-    c("Conspecific", "Basal area", "Humus pH","Organic matter", "Mean temperature", "CMI")
+    c("Conspecific", "Conspecific2","Basal area", "Humus pH","Organic matter", "Mean temperature", "CMI")
 ggplot(all_param %>% filter (var %in% list_coef, type == "pa")) +
     geom_point(aes(x = sp, y = mean, color = type_sp)) +
     geom_linerange(aes(x = sp, ymin = min, ymax = max, color = type_sp)) +
@@ -81,7 +81,7 @@ ggplot(all_param %>% filter (var %in% list_coef, type == "pa")) +
     geom_hline(yintercept = 0, linetype = "dashed") +
     # ajouter des lignes entre les facettes
     theme(panel.border = element_rect(color = "grey", fill = NA, size = 0.7)) +
-    labs(y = "Posterior distribution")
+    labs(y = "Posterior distribution", color = "Type of species")
 ```
 
 ```{r}
@@ -168,7 +168,7 @@ quadratic_plot("tmean")
 disturbance_pa <- disturbance_table("pa", TRUE)
 disturbance_nb <- disturbance_table("nb", TRUE)
 # Plot the results
-disturbance_plot(disturbance_pa, 20)
+disturbance_plot(disturbance_pa, 4)
 disturbance_plot(disturbance_nb, 4)
 ```
 
