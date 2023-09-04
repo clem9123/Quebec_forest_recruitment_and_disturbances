@@ -1,4 +1,12 @@
 Run_jags <- function(sp, model_file, name, n.iter = 500, path = "data/full_data.RData"){
+    ############################################################################
+
+    ### Function taking a species name as argument and running the jags model
+    ### it uploads the data, transform it into a list (the usable object for JAGS) and run the model
+    ### return a jags.parallel object
+
+    ############################################################################
+    
     # 1. Start timer
     begin = Sys.time()
     print(begin)
