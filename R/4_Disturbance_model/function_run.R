@@ -1,4 +1,4 @@
-Run_jags <- function(sp, model_file, name, n.iter = 500, path = "full_data.RData"){
+Run_jags <- function(sp, model_file, name, n.iter = 500, path = "data/full_data.RData"){
     # 1. Start timer
     begin = Sys.time()
     print(begin)
@@ -6,6 +6,13 @@ Run_jags <- function(sp, model_file, name, n.iter = 500, path = "full_data.RData
     jags_data <- make_jags_data(sp, path)
     # 3. Run model
     param = c(
+        # ba
+        "ba_intercept",
+        "ba_l0", "ba_l1",
+        "ba_pl0", "ba_pl1",
+        "ba_lpr0", "ba_lpr1",
+        "ba_b0", "ba_b1", "ba_b2",
+        "ba_o0", "ba_o1",
         # presence
         "pa_intercept",
         "pa_epmatorg", "pa_ph", "pa_soil", 

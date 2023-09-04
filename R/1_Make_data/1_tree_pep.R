@@ -469,20 +469,3 @@ pep_pe <- pep_pe %>% select(id_pe, altitude) %>%
 pep_xy <- pep_xy %>% merge(pep_pe %>% select(id_pe, altitude))
 
 st_write(pep_xy, "data/data_mh/pep_xy32198_fev2023.gpkg", layer_options = "OVERWRITE = yes")
-
-zone <- st_read("data/raw_data/PEP_GPKG/PEP.gpkg", layer = "classi_eco_pe")
-
-## AUTRE BORDEL
-tree_mes %>% left_join(zone) %>% filter(dom_bio == 4) -> tree_mes
-# garder seulement le premier id_arbre (pour avoir chaque arbre une seule fois)
-tree_mes %>% group_by(id_arbre) %>% filter(row_number() == 1) -> tree_mes
-
-tree_mes %>% ggplot(aes(x = essence)) + geom_bar()
-# je voudrais savoir la surface terriere des especes SAB ERR ERS EPB EPN BOP BOJ et THO
-tree_mes %>% filter(essence %in% c("SAB", "ERR", "ERS", "EPB", "EPN", "BOP", "BOJ", "PET")) %>%
-  group_by(essence) %>% summarise(st = sum(st_tige, na.rm = T)) %>%
-  pull(st) %>% sum()
-  # sum totale
-tree_mes %>% summarize(st = sum(st_tige, na.rm = T)) %>%
-  pull(st) %>% sum()
-

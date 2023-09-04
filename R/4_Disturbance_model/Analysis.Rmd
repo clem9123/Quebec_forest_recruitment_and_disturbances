@@ -32,15 +32,10 @@ full_data <- full_data %>% filter(sp_code %in% Mysp, dom_bio %in% c(4,5))
 Load the models output for every species
 
 ```{r}
-Model_path = "output/heavy/output/"
+Model_path = "output/heavy/output/" # impossible to upload on github for now because to big
 for (sp in Mysp){
     assign(paste0("Model_", sp), readRDS(paste0(Model_path, sp, ".rds")))
 }
-
-# DIC pour chaque model
-#DIC2 <- sapply(Mysp, function(x) {
-#    data.frame(get(paste0("Model_", x))$BUGSoutput$DIC)
-#})
 ```
 
 Load the function for making data from the models and plotting
@@ -110,40 +105,6 @@ ggplot(all_param %>% filter (var %in% list_coef, type == "nb")) +
     labs(y = "Posterior distribution")
 ```
 
-Récupérer les distribution entières de tous les paramètres pour chaque espèce
-
-```{r, include = FALSE}
-Coef = c("tmean", "epmatorg", "epmatorg2", "cmi", "ba",
-"intercept", "sp", "sp2", "ph", "ph2", "tmean2", "cmi2")
-all_param_dist <- data.frame()
-for (species in Mysp){
-    model <- get(paste0("Model_", species))
-    for (p in c("pa", "nb")){
-    for (c in Coef){
-        df = data.frame(posterior = model$BUGSoutput$sims.list[paste0(p, "_",c)][[1]], sp_code = species, coef = c, part = p)
-        all_param_dist <- rbind(all_param_dist, df)
-    }
-}}
-
-ggplot(all_param_dist) +# %>% filter(part == "pa", coef == "ba"))+
-    geom_density(aes(x = posterior, fill = coef), alpha = 0.5) +
-    facet_grid(~sp_code, scales = "free") +
-    theme_bw() +
-    xlim(-5, 5) +
-    ylim(0,10)
-ggplot(all_param_dist) + # %>% filter(part == "pa", coef == "ba"))+
-    geom_violin(aes(y = posterior, x = sp_code), alpha = 0.5) +
-    facet_grid(~coef, scales = "free") +
-    theme_bw()
-```
-
-# Soil effect
-
-```{r}  
-soil_param <- soil_param_table()
-soil_param_plot()
-```
-
 # 3. Model output for quadratic parameters
 
 With prediction on data range for this parameters :
@@ -165,11 +126,11 @@ quadratic_plot("tmean")
 ```{r, fig.height=6, fig.width = 8, warning = FALSE}
 # Extract the effect and their 95% confidence interval for each disturbance
 # For presence absence and abundance separatly
-disturbance_pa <- disturbance_table("pa", TRUE)
-disturbance_nb <- disturbance_table("nb", TRUE)
+disturbance_pa <- disturbance_table("pa", FALSE)
+disturbance_nb <- disturbance_table("nb", FALSE)
 # Plot the results
-disturbance_plot(disturbance_pa, 4)
-disturbance_plot(disturbance_nb, 4)
+disturbance_plot(disturbance_pa, 50)
+disturbance_plot(disturbance_nb, 50)
 ```
 
 Récupérer les distribution entières de tous les paramètres pour chaque espèce pour les perturbations
@@ -177,26 +138,14 @@ Récupérer les distribution entières de tous les paramètres pour chaque espè
 
 # 5. Posteriors distribution
 
-```{r}
-Coef <- c("nb_intercept", "nb_epmatorg", "nb_ph",
-        "nb_tmean", "nb_tmean2", "nb_cmi", "nb_cmi2",
-        #"nb_sp", "nb_sp2", "nb_year", "nb_ba",
-        #"nb_l0", "nb_l1", "nb_l2",
-        #"nb_pl0", "nb_pl1", "nb_pl2",
-        #"nb_lpr0", "nb_lpr1", "nb_lpr2",
-        #"nb_b0", "nb_b1", "nb_b2",
-        #"nb_o0", "nb_o1", "nb_o2",
-        "pa_intercept", "pa_epmatorg",  "pa_ph",
-        "pa_tmean", "pa_tmean2", "pa_cmi", "pa_cmi2")
-        #"pa_sp", "pa_sp2", "pa_year", "pa_ba",
-        #"pa_l0", "pa_l1", "pa_l2",
-        #"pa_pl0", "pa_pl1", "pa_pl2",
-        #"pa_lpr0", "pa_lpr1", "pa_lpr2",
-        #"pa_b0", "pa_b1", "pa_b2",
-        #"pa_o0", "pa_o1", "pa_o2")
-```
+## 5.1 For co-variables
 
-Extract the posterior distribution for each coefficient
+```{r}
+Coef <- c("nb_epmatorg", "nb_ph",
+        "nb_tmean", "nb_tmean2", "nb_cmi", "nb_cmi2",
+        "pa_epmatorg",  "pa_ph",
+        "pa_tmean", "pa_tmean2", "pa_cmi", "pa_cmi2")
+```
 
 ```{r}
 posteriors <- data.frame()
@@ -222,17 +171,20 @@ ggplot(posteriors %>% filter(part == "nb")) +
     theme_bw()
 ```
 
+## 5.2 For disturbances
+
 ```{r}
-Dist_coef <- c("nb_l0", "nb_pl0", "nb_lpr0", "nb_b0",  "nb_o0", "pa_l0",
-    "pa_pl0", "pa_lpr0", "pa_b0", "pa_o0")
+Dist_coef <- c("nb_l", "nb_pl", "nb_lpr", "nb_b",  "nb_o", "pa_l",
+    "pa_pl", "pa_lpr", "pa_b", "pa_o")
 
 dist_posteriors <- data.frame()
+df <- data.frame()
 for (sp in Mysp){
     model <- get(paste0("Model_", sp))
     for (c in Dist_coef){
         df = data.frame(posterior = model$BUGSoutput$sims.list[paste0(c)][[1]][,3], sp_code = sp, coef = c,
-            pa_intercept = model$BUGSoutput$sims.list["pa_intercept"][[1]],
-            nb_intercept = model$BUGSoutput$sims.list["nb_intercept"][[1]])
+            pa_intercept = model$BUGSoutput$sims.list["pa_intercept"][[1]][1],
+            nb_intercept = model$BUGSoutput$sims.list["nb_intercept"][[1]][2])
         dist_posteriors <- rbind(dist_posteriors, df)
     }
 }
@@ -262,45 +214,30 @@ ggplot(dist_posteriors) +# %>% filter(perturb %in% c("Clearcut", "Partial cut"))
     facet_grid(part ~ perturb) +
     scale_fill_manual(name = "Species type", values = c("#2e35f9", "#0cd53e", "#df2222")) +
     theme_bw() +
-    # legend position : bottom
-    theme(legend.position = "bottom") +
-    # text plus grand
-    #theme(text = element_text(size = 20)) +
-    # plus d'espace entre le texte des titres et axes et le graphe
-    theme(plot.margin = unit(c(1,1,1,1), "cm")) +
+    theme(legend.position = "bottom",
+        plot.margin = unit(c(1,1,1,1), "cm")) +
     xlim(-5,5)
 ```
 
-```{r, include = FALSE}
-traceplot(Model_ACERUB, var = "pa_intercept")
-traceplot(Model_ACESAC, var = "pa_intercept")
-traceplot(Model_BETALL, var = "pa_intercept")
-traceplot(Model_BETPAP, var = "pa_intercept")
-traceplot(Model_POPTRE, var = "pa_intercept")
-traceplot(Model_ABIBAL, var = "pa_intercept")
-traceplot(Model_PICMAR, var = "pa_intercept")
-traceplot(Model_PICGLA, var = "pa_intercept")
-```
-
-Il faut que ça tourne un peu plus longtemps
+# 6. Rhat and neff verification (Rhat ~ 1 and neff > 100)
 
 ```{r}
 Coef <- c("nb_intercept", "nb_epmatorg", "nb_epmatorg2", "nb_ph", "nb_ph2",
         "nb_tmean", "nb_tmean2", "nb_cmi", "nb_cmi2",
         "nb_sp", "nb_sp2", "nb_year", "nb_ba",
-        "nb_l0[1]","nb_l0[2]", "nb_l0[3]",
-        "nb_pl0[1]", "nb_pl0[2]", "nb_pl0[3]",
-        "nb_lpr0[1]", "nb_lpr0[2]", "nb_lpr0[3]",
-        "nb_b0[1]", "nb_b0[2]", "nb_b0[3]",
-        "nb_o0[1]", "nb_o0[2]", "nb_o0[3]",
+        "nb_l[1]","nb_l[2]", "nb_l[3]",
+        "nb_pl[1]", "nb_pl[2]", "nb_pl[3]",
+        "nb_lpr[1]", "nb_lpr[2]", "nb_lpr[3]",
+        "nb_b[1]", "nb_b[2]", "nb_b[3]",
+        "nb_o[1]", "nb_o[2]", "nb_o[3]",
         "pa_intercept", "pa_epmatorg", "pa_epmatorg2", "pa_ph", "pa_ph2",
         "pa_tmean", "pa_tmean2", "pa_cmi", "pa_cmi2",
         "pa_sp", "pa_sp2", "pa_year", "pa_ba",
-        "pa_l0[1]", "pa_l0[2]", "pa_l0[3]",
-        "pa_pl0[1]", "pa_pl0[2]", "pa_pl0[3]",
-        "pa_lpr0[1]", "pa_lpr0[2]", "pa_lpr0[3]",
-        "pa_b0[1]", "pa_b0[2]", "pa_b0[3]",
-        "pa_o0[1]", "pa_o0[2]", "pa_o0[3]")
+        "pa_l[1]", "pa_l[2]", "pa_l[3]",
+        "pa_pl[1]", "pa_pl[2]", "pa_pl[3]",
+        "pa_lpr[1]", "pa_lpr[2]", "pa_lpr[3]",
+        "pa_b[1]", "pa_b[2]", "pa_b[3]",
+        "pa_o[1]", "pa_o[2]", "pa_o[3]")
 
 
 # Récupérer les Rhat
@@ -315,40 +252,4 @@ neff <- sapply(Coef, function(x) {
 ```{r}
 Rhat
 neff
-```
-
-# Recherche erreur de convergence
-
-## Correlation présence espèce/temp...
-
-```{r}
-ggplot(full_data, aes(x = cmi_sum, y = is_species, color = sp_code)) +
-    geom_smooth(method = "glm", method.args = list(family = "binomial"), formula = y ~ poly(x,2), show.legend = FALSE) +
-    ylim(0,1) +
-ggplot(full_data, aes(x = cmi_sum, y = presence_gaule, color = sp_code)) +
-    geom_smooth(method = "glm", method.args = list(family = "binomial"), formula = y ~ poly(x,2)) +
-    ylim(0,1)
-```
-
-## Problème convergence perturbation (en particulier outbreak)
-
-```{r}
-full_data %>% filter(sp_code == "ABIBAL") %>% pull(cl_logging) %>%table()
-full_data %>% filter(sp_code == "ABIBAL") %>% pull(cl_outbreak) %>%table()
-full_data %>% filter(sp_code == "ABIBAL") %>% pull(cl_burn) %>%table()
-full_data %>% filter(sp_code == "ABIBAL") %>% pull(cl_partial_logging) %>%table()
-full_data %>% filter(sp_code == "ABIBAL") %>% pull(cl_logging_pr) %>%table()
-```
-
-```{r}
-ggplot(full_data %>% filter(is_outbreak == 1)) +
-    geom_bar(aes(x = cl_outbreak))
-
-```
-
-## Correlation soil ph epmatorg
-
-```{r}
-library(corrplot)
-full_data %>% mutate(soil = as.numeric(soil)) %>% select(soil, ph_humus, epmatorg) %>% cor() %>% corrplot(method = "number")
 ```

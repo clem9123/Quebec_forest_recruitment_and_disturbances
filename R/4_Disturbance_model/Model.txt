@@ -51,30 +51,29 @@ model{
     for (i in 1:N){
     PRESENCE[i] ~ dbern(p[i])
 
-    logit(p[i]) <- 
-        pa_intercept +
+    logit(p[i]) <-
+        pa_intercept[IS_SPECIES[i] + 1] +
         # soil
-        pa_epmatorg * EPMATORG[i] + pa_ph * PH[i] + pa_soil[SOIL[i]] +
+        pa_epmatorg * EPMATORG[i] + pa_ph * PH[i] +
+        #pa_soil[SOIL[i]] +
         # climate
         pa_tmean * TMEAN[i] + pa_tmean2 * pow(TMEAN[i],2) +
         pa_cmi * CMI[i] + pa_cmi2 * pow(CMI[i],2) +
         # biotic
         pa_ba * BA_res[i] +
-        pa_sp * NB_SP[i] + pa_sp2 * pow(NB_SP[i],2) +
         # perturbation
         pa_l[CL_L[i]] +
         pa_pl[CL_PL[i]] +
         pa_lpr[CL_LPR[i]] +
         pa_b[CL_B[i]] +
-        pa_o[CL_O[i]] +
+        pa_o[CL_O[i]] #+
         # random effect
-        pa_placette[PLACETTE[i]]
+        #pa_placette[PLACETTE[i]]
     }
 
     # Priors
     #--------
 
-    pa_intercept ~ dunif(-50,50)
     # soil
     pa_epmatorg ~ dunif(-50,50)
     pa_ph ~ dunif(-50,50)
@@ -89,10 +88,11 @@ model{
     pa_cmi2 ~ dunif(-50,50)
     # biotic
     pa_ba ~ dunif(-50,50)
+    pa_intercept[1] ~ dunif(-50,50)
+    pa_intercept[2] ~ dunif(-50,50)
     pa_sp ~ dunif(-50,50)
-    pa_sp2 ~ dunif(-50,50)
     # perturbation
-    
+
     for (i in 1:5){
         pa_l[i] ~ dunif(-50,50)
         pa_pl[i] ~ dunif(-50,50)
@@ -113,40 +113,40 @@ model{
     pa_taupl ~ dunif(0.0001,20)
 
     #----------------------------------------#
-    #            MODEL DENSITE             #
+    #            MODEL DENSITE               #
     #----------------------------------------#
+
+    # Pareil que pour la présence, mais avec une log et tout les parametre en nb_X
 
     # Likelihood
     #-------------
+
     for (i in 1:N){
-        DENSITE[i] ~ dpois(lambda[i] * PRESENCE[i] + 0.00001) T(PRESENCE[i],)
-    
-    log(lambda[i]) <- 
-        nb_intercept +
+    DENSITE[i] ~ dpois(lambda[i] * PRESENCE[i])
+
+    log(lambda[i]) <-
+        nb_intercept[IS_SPECIES[i] + 1] +
         # soil
-        nb_epmatorg * EPMATORG[i] +
-        nb_ph * PH[i] +
-        nb_soil[SOIL[i]] +
+        nb_epmatorg * EPMATORG[i] + nb_ph * PH[i] +
+        #nb_soil[SOIL[i]] +
         # climate
         nb_tmean * TMEAN[i] + nb_tmean2 * pow(TMEAN[i],2) +
         nb_cmi * CMI[i] + nb_cmi2 * pow(CMI[i],2) +
         # biotic
         nb_ba * BA_res[i] +
-        nb_sp * NB_SP[i] + nb_sp2 * pow(NB_SP[i],2) +
         # perturbation
         nb_l[CL_L[i]] +
         nb_pl[CL_PL[i]] +
         nb_lpr[CL_LPR[i]] +
         nb_b[CL_B[i]] +
-        nb_o[CL_O[i]] +
+        nb_o[CL_O[i]] #+
         # random effect
-        nb_placette[PLACETTE[i]] 
+        #nb_placette[PLACETTE[i]]
     }
 
     # Priors
     #--------
 
-    nb_intercept ~ dunif(-50,50)
     # soil
     nb_epmatorg ~ dunif(-50,50)
     nb_ph ~ dunif(-50,50)
@@ -161,10 +161,11 @@ model{
     nb_cmi2 ~ dunif(-50,50)
     # biotic
     nb_ba ~ dunif(-50,50)
+    nb_intercept[1] ~ dunif(-50,50)
+    nb_intercept[2] ~ dunif(-50,50)
     nb_sp ~ dunif(-50,50)
-    nb_sp2 ~ dunif(-50,50)
     # perturbation
-    
+
     for (i in 1:5){
         nb_l[i] ~ dunif(-50,50)
         nb_pl[i] ~ dunif(-50,50)
@@ -183,8 +184,4 @@ model{
     # random effect
     for (i in 1:N_PLACETTE) {nb_placette[i] ~ dnorm(0, nb_taupl)}
     nb_taupl ~ dunif(0.0001,20)
-
-    #----------------------------------------#
-    #          PREDICTION RESIDUS            #
-    #----------------------------------------#
 }

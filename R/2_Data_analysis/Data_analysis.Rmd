@@ -26,53 +26,21 @@ library(PCAmixdata)
 
 ```{r data, echo = FALSE}
 # load data
-Mysp = c("ABIBAL", "ACERUB", "ACESAC", "BETALL",
-    "PICMAR", "PICGLA", "BETPAP", "POPTRE")
 load("data/full_data.RData")
-full_data <- full_data %>%
-    mutate(n_perturb = is_logging + is_partial_logging + is_logging_pr + is_burn + is_outbreak) # nolint: line_length_linter.
-full_data1 <- full_data %>%
-    filter(sp_code == "ACERUB")
 placette_mes <- readRDS("data/data/placette_mes.RDS") %>% select(id_pe_mes, version)
 colnames(placette_mes) <- c("id_pe_mes", "inventaire")
 
-full_data <- full_data %>% filter(sp_code %in% Mysp) %>%
-    left_join(placette_mes %>% select(id_pe_mes,inventaire), by = "id_pe_mes") %>%
+# add inventory number
+full_data <- full_data %>%
+    left_join(placette_mes, by = "id_pe_mes") %>%
     ungroup() %>%
     # version : selectionner la premiere lettre
     mutate(inventaire = substr(inventaire, 1, 1))
 ```
 
-```{r}
-ggplot(full_data %>% filter(dom_bio == 4)) +
-    geom_density(aes(x = epmatorg))
-```
+# 1. Figure 1 : Map of the study area
 
-```{r}
-full_data %>% 
-ggplot(aes(x = longitude, y = latitude, color = factor(presence_gaule))) +
-    geom_point(a = 0.5) +
-    scale_color_manual(values = c("0" = "grey", "1"="green")) +
-    facet_wrap(~sp_code)
-```
-
-```{r}
-ggplot(full_data , aes(x = ph_humus)) +
-    geom_density()
-```
-
-```{r}
-full_data %>% filter(sp_code == "ACERUB", dom_bio == 4, longitude < -73) %>%
-    ggplot(aes(x= latitude, y = an_meanT)) +
-    geom_point() +
-    geom_smooth(method = "lm", se = FALSE)
-library(sf) 
-full_data <- st_as_sf(full_data, coords = c("longitude", "latitude"), crs = 4326)
-```
-
-# 1. Placette data
-
-Figure des placettes
+ ## Preparation
 
 ```{r}
 # download maps
@@ -109,7 +77,11 @@ pep_xy_prj <- pep_xy_prj %>% mutate(
         "Lichen spruce stand", "Forest tundra")))
 my_placette <- pep_xy_prj %>%
   filter(id_pe %in% full_data$id_pe)
+```
 
+## Plot
+
+```{r}
 ggplot() + 
     geom_sf(data = can) +
     geom_sf(data = qc, color = "black") +
@@ -128,19 +100,13 @@ ggplot() +
     theme_bw()
 ```
 
-# 2. Visualisation final data
-
-```{r}
-ggplot(full_data %>% filter(presence_gaule==1)) +
-    geom_bar(aes(x = sp_code))
-```
-
-## 2.2 Disturbances
+## 2 Disturbances, visualisation and preliminary analyses
 
 ### 2.2.1 Number of observation per disturbance
 
 ```{r}
-full_data1 %>%
+full_data %>%
+    filter(sp_code == "ACERUB") %>%
     summarise(
             n_logging = sum(is_logging),
             n_partial_logging = sum(is_partial_logging),
@@ -150,13 +116,6 @@ full_data1 %>%
             # et les autres
             n_noperturb = n() - n_logging - n_partial_logging - 
                 n_logging_pr - n_burn - n_outbreak
-            # nb id_pe pour chaque perturbation
-            #n_logging_id = length(unique(id_pe[is_logging == 1])),
-            #n_partial_logging_id = length(unique(id_pe[is_partial_logging == 1])), # nolint: line_length_linter.
-            #n_logging_pr_id = length(unique(id_pe[is_logging_pr == 1])),
-            #n_burn_id = length(unique(id_pe[is_burn == 1])),
-            #n_outbreak_id = length(unique(id_pe[is_outbreak == 1])),
-            #n_noperturb_id = length(unique(id_pe[n_perturb == 0]))
             ) %>%
     gather(key = "perturb", value = "n") %>%
     ggplot(aes(x = perturb, y = n)) +
@@ -174,39 +133,33 @@ full_data %>%
   geom_histogram() +
   theme_bw() +
   labs(title = "Date des perturbations de logging") +
-  ylim(0,200) +
 full_data %>% 
   filter(is_logging_pr == 1) %>%
   ggplot(aes(x = logging_pr)) +
   geom_histogram() +
   theme_bw() +
   labs(title = "Date des perturbations de logging_pr") +
-  ylim(0,200) +
 full_data %>%
     filter(is_partial_logging == 1) %>%
     ggplot(aes(x = partial_logging)) +
     geom_histogram() +
     theme_bw() +
     labs(title = "Date des perturbations de partial_logging") +
-    ylim(0,200) +
 full_data %>%
     filter(is_burn == 1) %>%
     ggplot(aes(x = burn)) +
     geom_histogram() +
     theme_bw() +
     labs(title = "Date des perturbations de burn") +
-    ylim(0,200) +
 full_data %>%
     filter(is_outbreak == 1) %>%
     ggplot(aes(x = outbreak)) +
     geom_histogram() +
     theme_bw() +
-    labs(title = "Date des perturbations de outbreak") +
-    ylim(0,200)
+    labs(title = "Date des perturbations de outbreak")
 ```
 
-# 3. Preliminary analyses
-
+# 3. Preliminary analyses on other covariables
 
 ## 3.1. PCA soil
 
@@ -259,7 +212,7 @@ p4 <- fviz_contrib(res.pca, choice = "var", axes = 2, top = 5) +
 bioclim %>% select(gdd_3,gdd_4, an_meanT, an_minT, an_maxT, cmi_sum, year, latitude, longitude) %>% cor() %>% corrplot()
 ```
 
-## 3.3. Climat sur les données
+## 3.3. Climate range in the study area
 
 ```{r}
 full_data1 %>% select(longitude, latitude, altitude, year_measured, an_meanT, cmi_sum) %>% cor() %>% corrplot()
@@ -274,13 +227,9 @@ ggplot(full_data1) +
     geom_point(aes(x = year_measured, y = latitude, color = an_meanT)) +
     theme_bw() +
     labs(title = "Temperature des parcelles")
-library(lme4)
-library(lmerTest)
-model <- lmer(an_meanT ~ year_measured + latitude + longitude + altitude + (1|id_pe), data = full_data1)
-summary(model)
 ```
 
-# 4. BAsal area and perturbations
+# 4. Basal area and perturbations
 
 ```{r}
 plot_BA <- function(perturb, ba = "tree_ba"){
@@ -302,100 +251,25 @@ plot_BA("burn") +
 plot_BA("outbreak")
 ```
 
-# 4. Posterior analyses  
+# Maps of presence and absence of the different species at juvenile stage and at different times
 
-Faire les figures pour voir les chengements effectif des composition de 
-communautés des stades juvéniles
-
-```{r}
-
-# Faire un tableau avec les moyennes de presence_gaule pour chaque perturbation
-# et pour chaque espèce
-Mysp = c("ABIBAL", "ACERUB", "ACESAC", "BETALL",
-    "PICMAR", "PICGLA", "BETPAP", "POPTRE")
-# 10 ans après et 25 ans après
-# moyenne sur 8 à 12 et 23 à 27
-# pour burn : faire une moyenne à 75 ans
-full_data %>%
-    group_by(sp_code, have_been_species) %>%
-    summarise(noperturb = mean(presence_gaule[n_perturb == 0]),
-            nb_noperturb = sum(n_perturb == 0),
-            loggingAT10 = mean(presence_gaule[is_logging == 1 & logging %in% 5:15]),
-            nb_loggingAT10 = sum(is_logging == 1 & logging %in% 5:15),
-            partial_loggingAT10 = mean(presence_gaule[is_partial_logging == 1 & partial_logging %in% 5:15]),
-            nb_partial_loggingAT10 = sum(is_partial_logging == 1 & partial_logging %in% 5:15),
-            logging_prAT10 = mean(presence_gaule[is_logging_pr == 1 & logging_pr %in% 5:15]),
-            nb_logging_prAT10 = sum(is_logging_pr == 1 & logging_pr %in% 5:15),
-            burnAT10 = mean(presence_gaule[is_burn == 1 & burn %in% 5:15]),
-            nb_burnAT10 = sum(is_burn == 1 & burn %in% 5:15),
-            outbreakAT10 = mean(presence_gaule[is_outbreak == 1 & outbreak %in% 5:15]),
-            nb_outbreakAT10 = sum(is_outbreak == 1 & outbreak %in% 5:15),
-            loggingAT25 = mean(presence_gaule[is_logging == 1 & logging %in% 20:30]),
-            nb_loggingAT25 = sum(is_logging == 1 & logging %in% 20:30),
-            partial_loggingAT25 = mean(presence_gaule[is_partial_logging == 1 & partial_logging %in% 20:30]),
-            nb_partial_loggingAT25 = sum(is_partial_logging == 1 & partial_logging %in% 20:30),
-            logging_prAT25 = mean(presence_gaule[is_logging_pr == 1 & logging_pr %in% 20:30]),
-            nb_logging_prAT25 = sum(is_logging_pr == 1 & logging_pr %in% 20:30),
-            burnAT25 = mean(presence_gaule[is_burn == 1 & burn %in% 20:30]),
-            nb_burnAT25 = sum(is_burn == 1 & burn %in% 20:30),
-            burnAT75 = mean(presence_gaule[is_burn == 1 & burn %in% 70:80]),
-            nb_burnAT75 = sum(is_burn == 1 & burn %in% 70:80),
-            outbreakAT25 = mean(presence_gaule[is_outbreak == 1 & outbreak %in% 20:30]),
-            nb_outbreakAT25 = sum(is_outbreak == 1 & outbreak %in% 20:30)) %>%
-    pivot_longer(cols = c(-sp_code, -have_been_species), names_to = "perturb", values_to = "mean") %>%
-    # séparer la colonne perturb en deux colonnes avec : la perturb et le temps
-    # (10 ou 25) attention il y a d'autres _ dans les noms de perturbations
-    separate(perturb, c("perturb", "time"), sep = "AT") -> moy_perturb
-
-# récupérer les lignes ou perturb commence par nb
-moy_perturb %>% filter(str_detect(perturb, "nb")) -> nb_perturb
-# supprimer le nb_ de perturb
-nb_perturb %>% mutate(perturb = str_remove(perturb, "nb_")) -> nb_perturb
-# renommer mean en nb
-nb_perturb %>% rename(nb = mean) -> nb_perturb
-# supprimer les lignes ou perturb commence par nb de moy_perturb
-moy_perturb %>% filter(!str_detect(perturb, "nb")) -> moy_perturb
-# joindre les deux dataframes
-moy_perturb %>% left_join(nb_perturb, by = c("sp_code", "perturb", "time", "have_been_species")) -> moy_perturb
-# change time == NA en 0
-moy_perturb %>% mutate(time = ifelse(is.na(time), 0, time)) -> moy_perturb
-
-ggplot(moy_perturb %>% filter(nb>=10, have_been_species == 1),aes(x = time, y = mean, fill = perturb)) +
-# same binwidth for all even inside a dodge
-    geom_col(position = position_dodge2(width = 0.9, preserve = "single")) +
-    theme_bw() +
-    labs(title = "Moyenne de présence de gaules pour chaque perturbation") +
-    facet_wrap(~sp_code)
-ggplot(moy_perturb %>% filter(nb>=10, have_been_species == 0),aes(x = time, y = mean, fill = perturb)) +
-# same binwidth for all even inside a dodge
-    geom_col(position = position_dodge2(width = 0.9, preserve = "single")) +
-    theme_bw() +
-    labs(title = "Moyenne de présence de gaules pour chaque perturbation") +
-    facet_wrap(~sp_code)
-```
+## Simple map for an overview
 
 ```{r}
-full_data %>% filter(is_logging == 1, is_species == 1) %>% group_by(sp_code) %>% select(sp_code, presence_gaule) %>% summarise(mean(presence_gaule))
-full_data %>% filter(is_logging == 1, is_species == 0) %>% group_by(sp_code) %>% select(sp_code, presence_gaule) %>% summarise(mean(presence_gaule))
-full_data %>% filter(n_perturb == 0, is_species == 1) %>% group_by(sp_code) %>% select(sp_code, presence_gaule) %>% summarise(mean(presence_gaule))
-full_data %>% filter(n_perturb == 0, is_species == 0) %>% group_by(sp_code) %>% select(sp_code, presence_gaule) %>% summarise(mean(presence_gaule))
+# Make the map
+p1 <- ggplot(data = data %>% filter(dom_bio == 4,
+    !sp_code %in% c("ACESPI", "PINBAN")),
+    aes(x = longitude, y = latitude, color = log(all_cl))) +
+    geom_point(size = 2) +
+    facet_grid(sp_code~inventaire) +
+    theme_bw() +
+    scale_color_gradient(low = "#fffb00", high = "red", na.value = "#bebebe50")
+p1
 ```
 
-# carte des données de présence par espece et pas decennies 
+## Map for figure 2
 
-
-Ce serait mieux de faire ça avec les inventaires 
-ET après je peux séparer les epèces entre boreale tempere et pionniere 
-et sous bois (j'en profite pour donner leurs specificite)
-Est ce que la map je la ferais pour tous les dom_bio ? 
-    ou juste pour les 3 dom_bio ? ou que pour le 4 ?
-
-Dedans :
-UNe carte par espece
-une carte par decennies
-un point par parcelle
-couleur en fonction de la presence de l'espece
-gris si pas mesuré dans la decennie
+### Data prep
 
 ```{r}
 # Make data
@@ -405,11 +279,11 @@ data <- full_data %>%
     summarise(presence_gaule = mean(presence_gaule), all_cl = mean(all_cl)) %>%
     mutate(inventaire = ifelse(inventaire == 1, 2, inventaire))
 
-# rename inventaire 2 : 1&2nd inventory (1970-1980)
-# rename inventaire 5 : 5th inventory (2000-2010)
-data <- data %>% mutate(inventaire = ifelse(inventaire == 2, "1&2nd inventory (1970-1980)", "5th inventory (2000-2010)"))
-# rename les espèces : avec le nom latin en A. sp.
-data <- data %>% mutate(sp_code = case_when(sp_code == "ABIBAL" ~ "A. balsamea",
+# renames inventory and species
+data <- data %>% 
+    mutate(
+        inventaire = ifelse(inventaire == 2, "1&2nd inventory (1970-1980)", "5th inventory (2000-2010)"),
+        sp_code = case_when(sp_code == "ABIBAL" ~ "A. balsamea",
                                             sp_code == "ACESAC" ~ "A. saccharum",
                                             sp_code == "ACERUB" ~ "A. rubrum",
                                             sp_code == "BETPAP" ~ "B. papyrifera",
@@ -417,9 +291,14 @@ data <- data %>% mutate(sp_code = case_when(sp_code == "ABIBAL" ~ "A. balsamea",
                                             sp_code == "PICGLA" ~ "P. glauca",
                                             sp_code == "PICMAR" ~ "P. mariana",
                                             sp_code == "POPTRE" ~ "P. tremuloides",))
+```
 
-# Make the map
-p1 <- ggplot(data = data %>% filter(
+### Plot prep
+
+```{r}
+# Make the 3 maps for each species type : boreal, temperate, pioneer
+
+plot_boreal <- ggplot(data = data %>% filter(
     inventaire %in% c("1&2nd inventory (1970-1980)","5th inventory (2000-2010)"),
     sp_code %in% c("A. balsamea","P. glauca","P. mariana")),
     aes(x = longitude, y = latitude, color = log(all_cl))) +
@@ -434,8 +313,10 @@ p1 <- ggplot(data = data %>% filter(
           color = "#656565"),
         strip.background = element_blank(),
         strip.placement = "outside",
-        strip.text.y = element_text(face = "italic"))
-p2 <- ggplot(data = data %>% filter(
+        strip.text.y = element_text(face = "italic")) +
+    labs(title = "Boreal")
+
+plot_temperate <- ggplot(data = data %>% filter(
     inventaire %in% c("1&2nd inventory (1970-1980)","5th inventory (2000-2010)"),
     sp_code %in% c("A. rubrum","A. saccharum","B. alleghaniensis")),
     aes(x = longitude, y = latitude, color = log(all_cl))) +
@@ -450,9 +331,10 @@ p2 <- ggplot(data = data %>% filter(
           color = "#656565"),
         strip.background = element_blank(),
         strip.placement = "outside",
-        strip.text.y = element_text(face = "italic"))
+        strip.text.y = element_text(face = "italic")) +
+    labs(title = "Temperate")
     
-p3 <- ggplot(data = data %>% filter(
+plot_pionneer <- ggplot(data = data %>% filter(
     inventaire %in% c("1&2nd inventory (1970-1980)","5th inventory (2000-2010)"),
     sp_code %in% c("B. papyrifera", "P. tremuloides")),
     aes(x = longitude, y = latitude, color = log(all_cl))) +
@@ -467,247 +349,26 @@ p3 <- ggplot(data = data %>% filter(
           color = "#656565"),
         strip.background = element_blank(),
         strip.placement = "outside",
-        strip.text.y = element_text(face = "italic"))
-    
+        strip.text.y = element_text(face = "italic")) +
+    labs(title = "Pioneer")
+```
 
-p2 + labs(title = "Temperate") +
-(p1 + labs (title ="Boreal")  + plot_layout(guides = "keep")) +
-p3 + labs(title = "Pioneer")+ 
+### Plot
+
+```{r}
+plot_temperate +
+(plot_boreal  + plot_layout(guides = "keep")) +
+plot_boreal +
 plot_layout(ncol = 2, heights = c(3,2), guides = "collect")
-
-
-# Make the map
-p1 <- ggplot(data = data %>% filter(dom_bio == 4,
-    !sp_code %in% c("ACESPI", "PINBAN")),
-    aes(x = longitude, y = latitude, color = log(all_cl))) +
-    geom_point(size = 2) +
-    facet_grid(sp_code~inventaire) +
-    theme_bw() +
-    scale_color_gradient(low = "#fffb00", high = "red", na.value = "#bebebe50")
-ggsave(p1, file="Plot_4.png", width=30, height=60, units = "cm", dpi=500)
-
-full_data %>%
-    filter(sp_code == "ABIBAL", inventaire %in% c(1,2)) %>%
-    pull(id_pe) %>% unique() %>% length()
 ```
 
-# ET en stats ?
-
-longitude de la moyenne de presence
-distribution de la biomasse en fonction de la latitude
-```{r}
-library(broom.mixed)
-library(glmmTMB)
-
-stat_data <- data.frame()
-for (sp in Mysp){
-    stat_data <- rbind(stat_data,
-        data.frame(tidy(glmmTMB(presence_gaule ~ latitude_sc*year_measured_sc + (1|id_pe),
-    data = full_data %>% filter(sp_code == sp, dom_bio == 4), family = "binomial")),
-            sp))
-}
-# significativite et positivité de la pente
-stat_df <- stat_data %>% mutate(
-    significatif = case_when(
-        p.value < 0.001 ~ "***",
-        p.value < 0.01 ~ "**",
-        p.value < 0.05 ~ "*",
-        p.value < 0.1 ~ ".",
-        TRUE ~ "ns"
-    )) %>%
-    # round estimate à 2 chiffres
-    mutate(estimate = round(estimate, 2)) %>%
-    # merge les colonnes estimate et significatif
-    unite("estimate", c("estimate", "significatif"), sep = " ") %>%
-    # virer std.error et statistic et p.value
-    select(-std.error, -statistic, -p.value, -effect, -component, -group) %>%
-    # povote la table pour avoir les espèces en colonne
-    pivot_wider(names_from = sp, values_from = estimate) %>%
-    select(- term) %>% t() %>%
-    data.frame()
-    # print la table en markdown
-
-
-# change row names
-colnames(stat_df) <- c("Intercept", "Latitude_pa", "Year_pa", "Latitude:Year_pa", "effet_random")
-stat_df <- stat_df %>% select(-Intercept, -effet_random)
-
-library(magick)
-library(kableExtra)
-library(knitr)
-
-for(i in 1:nrow(stat_df)) {
-    for (j in 1:ncol(stat_df)){
-        # recuperer les 3 premiesr caracteres de la cellule
-        value <- substr(stat_df[i, j], 1,3)
-        if(value > 0 & grepl("\\*\\*\\*", stat_df[i, j])){
-            stat_df[i, j] <- cell_spec(stat_df[i, j], 
-                "html", color = "blue", bold = T)}
-        else if(value < 0 & grepl("\\*\\*\\*", stat_df[i, j])){
-            stat_df[i, j] <- cell_spec(stat_df[i, j], 
-                "html", color = "red", bold = T)}
-        else if(value > 0){
-            stat_df[i, j] <- cell_spec(stat_df[i, j], 
-                "html", color = "blue")}
-        else if(value < 0){
-            stat_df[i, j] <- cell_spec(stat_df[i, j], 
-                "html", color = "red")}
-}}
-
-stat_df_pa <- stat_df
-```
-
+## Correlation presence temperature and cmi
 
 ```{r}
-# pareil pour la densité cad all_cl (nb de gaule)
-stat_data <- data.frame()
-for (sp in Mysp){
-    stat_data <- rbind(stat_data,
-        data.frame(tidy(glmmTMB(all_cl ~ latitude_sc*year_measured_sc + (1|id_pe),
-    data = full_data %>% filter(sp_code == sp, presence_gaule == 1, dom_bio == 4), family = truncated_poisson)),
-            sp))
-}
-# significativite et positivité de la pente
-stat_df <- stat_data %>% mutate(
-    significatif = case_when(
-        p.value < 0.001 ~ "***",
-        p.value < 0.01 ~ "**",
-        p.value < 0.05 ~ "*",
-        p.value < 0.1 ~ ".",
-        TRUE ~ "ns"
-    )) %>%
-    # round estimate à 2 chiffres
-    mutate(estimate = round(estimate, 2)) %>%
-    # merge les colonnes estimate et significatif
-    unite("estimate", c("estimate", "significatif"), sep = " ") %>%
-    # virer std.error et statistic et p.value
-    select(-std.error, -statistic, -p.value, -component, -effect, -group) %>%
-    # povote la table pour avoir les espèces en colonne
-    pivot_wider(names_from = sp, values_from = estimate) %>%
-    select(- term) %>% t() %>%
-    data.frame()
-    # print la table en markdown
-
-colnames(stat_df) <- c("Intercept", "Latitude", "Year", "Latitude:Year", "effet_random")
-stat_df <- stat_df %>% select(-Intercept, -effet_random)
-
-for(i in 1:nrow(stat_df)) {
-    for (j in 1:ncol(stat_df)){
-        # recuperer les 3 premiesr caracteres de la cellule
-        value <- substr(stat_df[i, j], 1,3)
-        if(value > 0 & grepl("\\*\\*\\*", stat_df[i, j])){
-            stat_df[i, j] <- cell_spec(stat_df[i, j], 
-                "html", color = "blue", bold = T)}
-        else if(value < 0 & grepl("\\*\\*\\*", stat_df[i, j])){
-            stat_df[i, j] <- cell_spec(stat_df[i, j], 
-                "html", color = "red", bold = T)}
-        else if(value > 0){
-            stat_df[i, j] <- cell_spec(stat_df[i, j], 
-                "html", color = "blue")}
-        else if(value < 0){
-            stat_df[i, j] <- cell_spec(stat_df[i, j], 
-                "html", color = "red")}
-}}
-stat_df_ab <- stat_df
-```
-
-```{r}
-colnames(stat_df_pa) <- c("Latitude_pa", "Year_pa", "Latitude:Year_pa")
-colnames(stat_df_ab) <- c("Latitude_ab", "Year_ab", "Latitude:Year_ab")
-stat_df_full <- cbind(stat_df_pa, stat_df_ab)
-# arrange la table avec ordre perso
-stat_df_full <- stat_df_full[c("ACERUB", "ACESAC", "BETALL", "POPTRE", "BETPAP", "ABIBAL", "PICGLA", "PICMAR"),]
-# rename column species et en italic
-stat_df_full <- stat_df_full %>% rownames_to_column("Species")
-stat_df_full <- stat_df_full %>% 
-mutate(Species = c("A. rubrum", "A.saccharum"," B. alleghaniensis",
-    "P. tremuloides", "B. papyrifera", 
-    "A. balsamea", "P. glauca"," P. mariana")) %>%
-    mutate(Species = cell_spec(Species, "html", italic = T))
-
-# mettre rownames dans la première colonne
-
-# ajouter une premiere colonne avec : 3* "Temperate", 3* "Boreal" et 2* "Pionneer"
-stat_df_full <- stat_df_full %>% mutate(
-    Type = c(rep("Temperate", 3), rep("Pionneer", 2), rep("Boreal", 3))
-)
-# mettre cette colonne en premier
-stat_df_full <- stat_df_full[c("Type", "Species", "Latitude_pa", "Year_pa", "Latitude:Year_pa", "Latitude_ab", "Year_ab", "Latitude:Year_ab")]
-```
-
-
-kable(stat_df_full[,2:8], 'html', booktabs =TRUE,escape = FALSE,
-    col.names = c("  ","Latitude", "Year", "Latitude:Year","Latitude", "Year", "Latitude:Year")) %>%
-    pack_rows(index = table(fct_inorder(stat_df_full$Type))) %>%
-    kable_styling(bootstrap_options = "basic", full_width = T) %>%
-    add_header_above(c("Species" = 1, "Presence" = 3, "Abundance" = 3))
-        save_kable(file = "stat_table.png", zoom = 10)
-
-
-# Augmentation diminution du nombre de gaule sur les placettes repetées
-
-```{r}
-# récuperer dat_rep les placettes qui apparaissent au moins 3 fois pour une seule espèce
-id_rep <- full_data1 %>% 
-    group_by(id_pe) %>% 
-    filter(n() >= 3) %>% pull(id_pe)
-data_rep <- full_data %>% filter(id_pe %in% id_rep) %>% ungroup()
-
-# pour chaque id_pe faire une regression linéaire de la présence de gaule en fonction de la mesure
-# récupérer le coefficient de la regression
-# récupérer le p-value de la regression
-# récupérer le r2 de la regression
-
-# faire un dataframe avec les id_pe, les coefficients, les p-value et les r2
-df_stat <- data_rep %>% 
-    group_by(id_pe, sp_code) %>% 
-    do(tidy(glm(all_cl ~ year_measured, data = ., family = "poisson"))) %>% 
-    ungroup() %>%
-    select(id_pe, sp_code, term, estimate, p.value) %>% 
-    pivot_wider(names_from = term, values_from = c(estimate, p.value)) %>% 
-    left_join(full_data %>% select(id_pe, latitude, longitude), all.x = TRUE) %>% unique()
-    #unnest(cols = c(estimate, p.value)) %>%
-    #rename(coef = estimate, p_value = p.value)
-
-ggplot(data_rep , aes(x = year_measured, y = all_cl, color = id_pe)) +
-    geom_point() +
-    geom_smooth(method = "glm", method.args = list(family = "poisson"), se = FALSE) +
-    facet_wrap(~sp_code) +
-    theme_bw() +
-    theme(legend.position = "none")
-```
-
-
-```{r}
-ggplot(full_data, aes(x = longitude, y = latitude)) +
-    geom_point(aes(color = an_meanT))
-```
-
-
-```{r}
-ggplot(full_data) +
-    geom_bar(aes(x = sp_code, fill = factor(is_species)), position = "fill")
-```
-
-```{r}
-ggplot(full_data) +
-    geom_point(aes(x = longitude, y = latitude, color = (ph_humus)))
-
-ggplot(full_data) +
-    geom_point(aes(x = an_meanT, y = epmatorg)) +
-    geom_smooth(aes(x = an_meanT, y = epmatorg), method = "lm", se = FALSE)
-
-ggplot(full_data) +
-    geom_point(aes(x = latitude, y = (ph_humus))) +
-    geom_smooth(aes(x = latitude, y = (ph_humus)), method = "lm", se = FALSE)
-```
-
-```{r}
-ggplot(full_data %>% filter(sp_code == "ACERUB")) +
-    geom_point(aes(y = is_species, x = an_meanT)) +
-    geom_smooth(aes(y = is_species, x = an_meanT), method = "glm", method.args = list(family = "binomial"), formula = y ~ poly(x,2))
-```
-
-```{r}
-
+ggplot(full_data, aes(x = cmi_sum, y = is_species, color = sp_code)) +
+    geom_smooth(method = "glm", method.args = list(family = "binomial"), formula = y ~ poly(x,2), show.legend = FALSE) +
+    ylim(0,1) +
+ggplot(full_data, aes(x = cmi_sum, y = presence_gaule, color = sp_code)) +
+    geom_smooth(method = "glm", method.args = list(family = "binomial"), formula = y ~ poly(x,2)) +
+    ylim(0,1)
 ```

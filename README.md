@@ -41,14 +41,15 @@ Table correspondance soil numberc :
 
 |Code | Soil caracteristics |
 |-----|----------|
-| 1 | de texture grossière et de drainage xérique ou mésique |
-| 2 | 
-| 3 | 
-| 4 | 
-| 5 | 
-| 6 | 
-
-
+| 0 | texture variée et drainage de xérique à hydrique |
+| 1 | texture grossière et de drainage xérique ou mésique |
+| 2 | texture moyenne et de drainage mésique |
+| 3 | texture fine et de drainage mésique |
+| 4 | texture grossière et de drainage subhydrique |
+| 5 | texture moyenne et de drainage subhydrique |
+| 6 | texture fine et de drainage subhydrique |
+| 7 | drainage hydrique, ombrotrophe |
+| 8 | drainage hydrique, minérotrophe |
 
 ### Analyses
 
@@ -73,7 +74,7 @@ With :
 - `Model.txt` : The model specification
 - `function_run.R` : Create the function to run the model with jags.parallel
 (Make the specific data for the model)
-- `Run.R` : Run the model for all the sppecies in parallel **!!! Uses a lot of core (30) so be careful to have enough on your system or decrease the number in
+- `Run.R` : Run the model for all the sppecies in parallel **!!! Uses a lot of core (30) so be careful to have enough on your system or decrease the number in :
 
 ```{r}
 cl <- makeCluster(30)
@@ -88,42 +89,19 @@ Output of the 8 individual model for each species was not uploaded here because 
 - 
 - 
 
-
 # A faire :
 
-- [ ] CONVERGENCE
+IMPORTANT :
 
+- [ ] Refaire tourner les modèles avec 
+- [ ] et sans BA
+- [ ] (+ tableau de comparaison déviance + BIC)
+- [ ] Faire des output utilisable : (tableau plus cours des résutats poir pouvoir les uploader sur Github dans output)
+- [x] Relire le README
+- [x] Relire le code
+- [ ] Relire le rapport
 
-- [x] Telecherger les models finaux sur ripley
-- [x] Mettre les figures dans un dossier `figures`
-- [ ] Faire les tableaux de corrspondances chiffre/signification pour les variables qualitatives (sol en particulier)
-- [ ] Plot les sorties du sol
-- [x] Rédiger le README
-- [ ] Faire des output utilisable : (tableau plus cours des résutats poir pouvoir les uploader sur Github dans output) : les sorties des paramères (mean, min and mean)
-- [ ] Figure parametre : espèce en italique + nom en anglais (eventuellement density plot)
-- [x] Check correlation entre soil, ph et epmatorg
+ANECDOTIQUE :
 
-
-Simplifier les bordures de la carte (st simplify)
-- [ ] Faire des output utilisable : (tableau plus cours des résutats poir pouvoir les uploader sur Github dans output)*
+- [ ] Simplifier les bordures de la carte (st simplify)
 - [ ] Virer result.RDS
-
-# Question
-
-- problème de convergence de l'intercept
-- Quel visuel pour les sorties ?
-- What to do in the text ? Ref, ecrire priors
-
-# Sub-model BA
-
-| with BA sub model  |  without BA sub model |
-|--------------------|-----------------------|
-|        179325.72   |             180250.71 |
-|         95652.49   |              95603.13 |
-|         79111.98   |              79202.24 |
-|         85415.10   |              85466.13 |
-|        125876.68   |             126024.51 |
-|         84753.54   |              84786.29 |
-|        117718.97   |             117585.83 |
-|         87105.70   |              86826.04 |
-|--------------------|-----------------------|

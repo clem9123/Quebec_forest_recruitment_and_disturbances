@@ -385,26 +385,3 @@ labels = c("6","1","2","3","4","5"))) -> full_data
 full_data <- na.omit(full_data)
 
 save(full_data, scaling, file = "data/full_data.RData")
-
-#pep_xy <- readRDS("data/data/pep_xy.RDS")
-#placette_mes <- readRDS("data/data/placette_mes.RDS")
-#
-#
-#
-#load("data/full_data.RData")
-#
-# ne garder que la dernière perturbation : la date de la colonne logging ou autre perturb doit être la plus récente que toute les autres
-#full_data1 <- full_data %>%
-#    mutate(
-#        is_logging = ifelse(is_logging == 1 &
-#            ((is_partial_logging & logging > partial_logging) | (is_burn & logging > burn) | (is_outbreak & logging > outbreak) | (is_logging_pr & logging > logging_pr)), 0, is_logging),
-#        is_partial_logging = ifelse(is_partial_logging == 1 &
-#            ((is_burn & partial_logging > burn) | (is_outbreak & partial_logging > outbreak) | (is_logging_pr & partial_logging > logging_pr) | (is_logging & partial_logging > logging)), 0, is_partial_logging),
-#        is_burn = ifelse(is_burn == 1 &
-#            ((is_outbreak & burn > outbreak) | (is_logging_pr & burn > logging_pr) | (is_logging & burn > logging) | (is_partial_logging & burn > partial_logging)), 0, is_burn),
-#        is_outbreak = ifelse(is_outbreak == 1 &
-#            ((is_logging_pr & outbreak > logging_pr) | (is_logging & outbreak > logging) | (is_partial_logging & outbreak > partial_logging) | (is_burn & outbreak > burn)), 0, is_outbreak),
-#        is_logging_pr = ifelse(is_logging_pr == 1 &
-#            ((is_logging & logging_pr > logging) | (is_partial_logging & logging_pr > partial_logging) | (is_burn & logging_pr > burn) | (is_outbreak & logging_pr > outbreak)), 0, is_logging_pr))
-#
-#save(full_data1, file = "data/full_data1.RData")
