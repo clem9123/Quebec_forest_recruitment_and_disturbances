@@ -30,14 +30,16 @@ Initial data are from the Minister : https://www.donneesquebec.ca/recherche/data
 download.file("https://diffusion.mffp.gouv.qc.ca/Diffusion/DonneeGratuite/Foret/DONNEES_FOR_ECO_SUD/Placettes_permanentes/PEP_GPKG.zip", destfile = "raw_data/PEP.zip")
 ```
 
-See beginning or `R/1_Make_data/tree_pep.R`
+See beginning of `R/1_Make_data/tree_pep.R`
 
 Then all selection and modification on this data are made with the files from
-`R/1_Make_data` (have to bee run in order), the output dataframe is `data/full_data.RDS` and is the one I used for all following analyses
+`R/1_Make_data` (1 to 8 have to bee run in order), the output dataframe is `data/full_data.RDS` and is the one I used for all following analyses
+
+It is not necessary to run all the code to make the data, you can just use the output `data/full_data.RDS` and start with the analyses part.
 
 #### Code in data
 
-Table correspondance soil numberc :
+Table correspondance soil caracteristics/number :
 
 |Code | Soil caracteristics |
 |-----|----------|
@@ -55,6 +57,17 @@ Table correspondance soil numberc :
 
 #### 1. Analyses of the data : `R/2_Data_analysis`
 
+File :
+- `Data_analysis.Rmd` : Analyses of the data and make some figures and tables. Figures for the article made in this document and can be found in `/figures`.
+
+Figures made :
+- Map of the study area (Figure 1)
+- number of disturbances by types and distribution of time since disturbance for each one
+- PCA on soil and climate
+- Link between basal area and disturbances
+- Map of the presence absence of each species at the first and last inventory (Figure 2)
+- link between species presence and climate (CMI and temperature)
+
 #### 2. Analyses of space and time : `R/3_Space_time_model`
 
 Code to make the space time frequentist model with glmmTMB (https://github.com/glmmTMB/glmmTMB).
@@ -65,6 +78,8 @@ Figure in my article in this part are made in this document and can be found in 
 ##### a. Choice of parameters
 
 Covariable selection for subsequent bayesian model with buildmer (https://github.com/cvoeten/buildmer). Thanks to Cesko Voeten for this package.
+Just ran different hurdle models for all species and step them to select important covariables.
+Also a little bit of co-linearity analysis between variables.
 
 ##### b. Bayesian model
 
@@ -93,6 +108,7 @@ Output of the 8 individual model for each species was not uploaded here because 
 
 IMPORTANT :
 
+- [ ] Finaliser la figure de l'analyse space and time
 - [ ] Refaire tourner les modèles avec 
 - [ ] et sans BA
 - [ ] (+ tableau de comparaison déviance + BIC)
