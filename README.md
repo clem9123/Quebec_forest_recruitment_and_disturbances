@@ -120,6 +120,8 @@ IMPORTANT :
 - [x] Relire le README
 - [x] Relire le code
 - [ ] Relire le rapport
+- [ ] download code from server
+- [ ] Make short model to see if eventually i can upload them to github
 
 ANECDOTIQUE :
 
