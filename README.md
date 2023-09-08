@@ -99,10 +99,14 @@ Analyse of the model output are made in `Analyse.Rmd` and uses `function_analyse
 
 ### Output
 
-Output of the 8 individual model for each species was not uploaded here because of weight but you can find some of the data I extracted from them in `/output` :
+Output of the 8 individual model for each species was not uploaded here because of weight but you can find some of the data I extracted from them in `/output`
 
-- 
-- 
+They are data frame with the parameters and the 95% credible interval for each species
+- `all_param.rds` : data frame with all covariates parameters (presence of conspecific adult indivisuals, basal area, soil, climate...)
+- `quadratic.rds` : data frame with the quadratic effect of cmi and temperature
+- `disturbance_pa.rds` and `disturbance_nb.rds` : data frame with the effect of each disturbance after 10, 20 and 30 years on presence and abundance respectively
+
+`Pre-article.Rmd` allows you to make the figure for these data frames
 
 # A faire :
 
