@@ -1,0 +1,220 @@
+---
+output : html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warnings = FALSE)
+```
+
+```{r, warning = FALSE, message = FALSE}
+library(tidyverse)
+library(patchwork)
+library(R2jags)
+library(boot)
+library(cowplot)
+```
+
+# 1. Space-time Model
+
+Model :
+
+presence_gaule ~ latitude_sc*year_measured_sc +(1|id_pe)
+
+if present : all_cl ~ latitude_sc*year_measured_sc + (1|id_pe)
+
+![Caption for the picture.](Figure/Autre/Space_time_temperate.png)
+
+Augmentation vers le nord (pour avoir les résidus... et les autres espèces aller 
+voir la partie Analyse sur ce sujet)
+
+
+# 2. Bayesian model part
+
+## 2.1 Load the data
+
+```{r data, echo = FALSE}
+# load data
+Mysp = c("ABIBAL","ACERUB","BETALL", "ACESAC","PICMAR", "PICGLA", "BETPAP", "POPTRE")
+load("data/full_data.RData")
+# This data countains full_data a dataframe with the data I analysed
+# and scaling a dataframe with the scaling factor for each variables (mean and sd)
+full_data <- full_data %>% filter(sp_code %in% Mysp, dom_bio %in% c(4,5))
+```
+
+```{r}
+source("R/4_Disturbance_model/function_analysis.R")
+```
+
+# 2.2 Model output for all coefficients except disturbance related ones
+
+```{r}
+all_param <- readRDS("output/all_param.rds")
+```
+
+```{r, fig.height = 8, fig.width = 10, warning= FALSE}
+list_coef = 
+    c("Conspecific", "Conspecific2","Basal area", "Humus pH","Organic matter", "Mean temperature", "CMI")
+ggplot(all_param %>% filter (var %in% list_coef, type == "pa")) +
+    geom_point(aes(x = sp, y = mean, color = type_sp)) +
+    geom_linerange(aes(x = sp, ymin = min, ymax = max, color = type_sp)) +
+    facet_wrap(~ var, strip.position = "left", ncol = 1) +
+    coord_flip() +
+    theme_bw() +
+    theme(strip.placement = "outside",
+        strip.background = element_blank(),
+        strip.text.y = element_text(angle = 0, hjust = 0.5),
+        # coller les facettes
+        panel.spacing = unit(0, "lines"),
+        # lignes de en haut et en bas des facettes en pointillées, que en haut
+        # juste un axe tout en bas et tout à gauche
+        axis.line = element_line(color = "black"),
+        axis.ticks = element_blank(),
+        axis.title.y = element_blank()) +
+    # axe vertical à 0
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    # ajouter des lignes entre les facettes
+    theme(panel.border = element_rect(color = "grey", fill = NA, size = 0.7)) +
+    labs(y = "Posterior distribution", color = "Type of species")
+```
+
+```{r, fig.height = 8, fig.width = 10, warning= FALSE}
+list_coef = 
+    c("Conspecific", "Conspecific2","Basal area", "Humus pH","Organic matter", "Mean temperature", "CMI")
+ggplot(all_param %>% filter (var %in% list_coef, type == "nb")) +
+    geom_point(aes(x = sp, y = mean, color = type_sp)) +
+    geom_linerange(aes(x = sp, ymin = min, ymax = max, color = type_sp)) +
+    facet_wrap(~ var, strip.position = "left", ncol = 1) +
+    coord_flip() +
+    theme_bw() +
+    theme(strip.placement = "outside",
+        strip.background = element_blank(),
+        strip.text.y = element_text(angle = 0, hjust = 0.5),
+        # coller les facettes
+        panel.spacing = unit(0, "lines"),
+        # lignes de en haut et en bas des facettes en pointillées, que en haut
+        # juste un axe tout en bas et tout à gauche
+        axis.line = element_line(color = "black"),
+        axis.ticks = element_blank(),
+        axis.title.y = element_blank()) +
+    # axe vertical à 0
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    # ajouter des lignes entre les facettes
+    theme(panel.border = element_rect(color = "grey", fill = NA, size = 0.7)) +
+    labs(y = "Posterior distribution", color = "Type of species")
+```
+
+To understand the underlying factors that either facilitate or impede the previously 
+observed changed in sapling recruitment patterns, we modeled the impact of three 
+key environmental characteristics on the sapling distribution and abundance. 
+Specifically, we examined the influence of biotic factors (presence of conspecific 
+species and total basal area), soil specificity (pH of humus and thickness of organic 
+matter), and climatic conditions (moisture and temperature).
+
+Our findings indicate that biotic characteristics exert a strong and significant 
+effect on both the presence and abundance of tree species. The presence of 
+conspecific species had a significant and positive correlation with the presence of 
+saplings in the understory, ranging from 1.8 to 7.6 (Figure 3). This effect was 
+consistently observed across all species examined. Moreover, the presence of 
+conspecific species also positively influenced the number of saplings. Conversely, 
+total basal area exhibited predominantly 
+negative correlations with both presence and abundance. This negative influence was 
+particularly pronounced for pioneer species as well as P. mariana and A. rubrum. 
+However, A. balsamea displayed an interesting exception, with its presence positively 
+correlated with basal area, while its abundance showed a negative correlation. 
+
+Regarding soil characteristics, pH was found to be positively correlated only 
+with P. tremuloides presence.
+thickness of organic matter negatiely correlated with presence of pionneer and temperate species.
+(i.e.Temperate species and pionneer exhibited a higher probability of presence on thinner soil.)
+
+Finally, amoingst our two climatic variables (CMI and temperature) Temperature 
+was found to have a significantly strong positive effect on the presence of temperate saplings.
+
+## 2.3 Model output for quadratic parameters (supplementary)
+
+```{r}
+# read
+quadratic <- readRDS("output/quadratic.rds")
+```
+
+```{r}
+# Plot the results for each quadratic parameters, text size is reduced to 75 %
+quadratic_plot("cmi")
+quadratic_plot("tmean")
+```
+
+## 2.4 Disturbance
+
+Il faudrait rajouter a, b, c... sur les graphes \
+Je l'avais fait en dehors de R last time
+
+```{r}
+# read
+disturbance_pa <- readRDS("output/disturbance_pa.rds")
+disturbance_nb <- readRDS("output/disturbance_nb.rds")
+```
+
+```{r, fig.height = 8, fig.width = 10, warning= FALSE}
+# Plot the results
+disturbance_plot(disturbance_pa, 3)
+```
+
+** NOTE **
+
+General trend per species
+- Acer rubrum sees an increase in presence probability with disturbance
+
+Trend for cuts :
+- Clearcut : very positove effect on pionneer species especially P. tremuloides
+- Protecting regeneration doesn't seem to have a strong "intended" effect on the presence 
+probability of species but for Acer rubrum
+- Partial cut : positive effect on temperate species (8 species*time interval out of nine) 
+but also for P. tremuloides and A.balsamea only on the short term : 10 and 20 years
+
+Trend for fire and outbreak :
+- our temperate Acer sac and B all do not show a concistent effect after an outbreak but negative after fire
+- A. Balsamea is very present after outbreak, the other temperate species also 
+show a significant but less important increase after 10 years
+- fire not that much noticeable effect
+
+ON the other trend we could discuss (time)
+- there is change over time after a disturbance 
+(i.e. A. balsamea after a fire, P. tremuloide after a cut and fire)
+
+```{r, fig.height = 8, fig.width = 10, warning= FALSE}
+# Plot the results
+disturbance_plot(disturbance_nb, 3)
+```
+
+Partial cut :
+- Temperate species also increase their sapling density after partial cut
+
+Regeneration protection :
+- positive for the number of new sappling (if not for the presence probability) 
+especially for B. all and Acer species in the first 10 years
+
+outbreak and A balsamea :
+- More present but also more numerous
+
+# Paragraphe from my report slightly adapted
+
+Firstly, it is important to note that different disturbances have varying effects 
+on sapling recruitment. While they all fall within a similar range of importance, 
+their impact on different species can vary. For instance, the presence of B. papyrifera 
+saplings is significantly influenced by clearcut and fire, but not by partial cut or 
+outbreaks (Fig. 4e,m,u). Generally, clearcut has a positive effect on the presence 
+of pioneer species such as P. tremuloides, B. papyrifer (Fig. 4d,e). 
+The effect of CPRS, in terms of presence probability, is not significantly 
+positive compared to clearcut as we could have anticipated. Only Acer rubrum 
+seems to be more present on this disturbed plots. However, it does lead to significantly higher 
+sapling abundance for A. saccharum in the first 10 years and B. alleghaniensis in the first 20 (Fig. 5b,c).
+
+Among the temperate species, only A. rubrum is affected by outbreak events in a consistent way. 
+It is more frequently observed in plots 20 years after an outbreak, although 
+its abundance is lower compared to undisturbed plots (Fig4i, 5i ). Generally A. rubrum is
+more present in disturbed plots, whatever the event.
+
+After 50 years effect of fire can still be detected in the regenerative layer 
+and even if it is not in the same time frame as cut and outbreak effect are similar in amplitude.
+No species is significantly and consistently more present 50 to 100 years after 
+a fire but A. rubrum compared to an undisturbed plot.

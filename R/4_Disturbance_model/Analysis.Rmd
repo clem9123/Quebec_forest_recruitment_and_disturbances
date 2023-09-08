@@ -38,6 +38,22 @@ for (sp in Mysp){
 }
 ```
 
+Load the DIC and deviance for every species
+
+```{r}
+DIC <- data.frame()
+for (sp in Mysp){
+    model <- get(paste0("Model_", sp))
+    DIC <- rbind(DIC, data.frame(DIC = model$BUGSoutput$DIC, sp_code = sp))
+}
+
+deviance <- data.frame()
+for (sp in Mysp){
+    model <- get(paste0("Model_", sp))
+    deviance <- rbind(deviance, data.frame(deviance = model$BUGSoutput$summary["deviance","mean"], sp_code = sp))
+}
+```
+
 Load the function for making data from the models and plotting
 
 ```{r}
@@ -51,6 +67,8 @@ source("R/4_Disturbance_model/function_analysis.R")
 all_param <- all_param_table()
 # Plot the results for all coefficients
 all_param_plot()
+# save all_param data as rds
+saveRDS(all_param, "output/all_param.rds")
 ```
 
 ```{r}
@@ -119,6 +137,8 @@ quadratic <- quadratic_table() # transform = TRUE will transform the data to the
 # Plot the results for each quadratic parameters
 quadratic_plot("cmi")
 quadratic_plot("tmean")
+# save quadratic data as rds
+saveRDS(quadratic, "output/quadratic.rds")
 ```
 
 # 4. Model output for disturbances parameters
@@ -129,8 +149,11 @@ quadratic_plot("tmean")
 disturbance_pa <- disturbance_table("pa", FALSE)
 disturbance_nb <- disturbance_table("nb", FALSE)
 # Plot the results
-disturbance_plot(disturbance_pa, 4)
-disturbance_plot(disturbance_nb, 50)
+disturbance_plot(disturbance_pa, 3)
+disturbance_plot(disturbance_nb, 3)
+# save disturbance data as rds
+saveRDS(disturbance_pa, "output/disturbance_pa.rds")
+saveRDS(disturbance_nb, "output/disturbance_nb.rds")
 ```
 
 Récupérer les distribution entières de tous les paramètres pour chaque espèce pour les perturbations

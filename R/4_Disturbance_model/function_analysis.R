@@ -377,7 +377,8 @@ disturbance_plot <- function(df, a){
             "BETALL" = "B. alleghaniensis", "BETPAP" = "B. papyrifera",
             "POPTRE" = "P. tremuloides", "ABIBAL" = "A. balsamea",
             "PICGLA" = "P. glauca", "PICMAR" = "P. mariana")))
-    general_blanck_theme <- theme(legend.position = "none", axis.title.x = element_blank(),axis.title.y = element_blank(), axis.ticks.y = element_blank(), axis.text.y = element_blank(), strip.text.x = element_blank())
+    general_blanck_theme <- theme(
+        legend.position = "none", axis.title.x = element_blank(),axis.title.y = element_blank(), axis.ticks.y = element_blank(), axis.text.y = element_blank(), strip.text.x = element_blank())
     zero_line <- geom_hline(yintercept = 0, linetype = "dashed", color = "red")
     limits = ylim(-a,a)
 
@@ -409,7 +410,7 @@ disturbance_plot <- function(df, a){
             if(p == "logging"){
                 plot <- plot + 
                     labs(title = sp_type) + 
-                    theme(strip.text.x = element_text(size = 15,color = "#656565",face = "italic"),strip.background = element_blank())}
+                    theme(strip.text.x = element_text(size = 10,color = "#656565",face = "italic"),strip.background = element_blank())}
             # to have the x axis only once at the bottom of the graph
             if(p == "burn" & sp_type == "Pioneer"){
                 plot <- plot +

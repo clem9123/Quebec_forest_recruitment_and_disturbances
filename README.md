@@ -108,11 +108,11 @@ Output of the 8 individual model for each species was not uploaded here because 
 
 IMPORTANT :
 
-- [ ] Finaliser la figure de l'analyse space and time
-- [ ] Refaire tourner les modèles avec 
-- [ ] et sans BA
-- [ ] (+ tableau de comparaison déviance + BIC)
-- [ ] Faire des output utilisable : (tableau plus cours des résutats poir pouvoir les uploader sur Github dans output)
+- [ ] refaire la map de l'intro (study area)
+- [x] Refaire tourner les modèles avec 
+- [x] et sans BA
+- [x] (+ tableau de comparaison déviance + BIC)
+- [x] Faire des output utilisable : (tableau plus cours des résutats poir pouvoir les uploader sur Github dans output)
 - [x] Relire le README
 - [x] Relire le code
 - [ ] Relire le rapport
@@ -121,3 +121,33 @@ ANECDOTIQUE :
 
 - [ ] Simplifier les bordures de la carte (st simplify)
 - [ ] Virer result.RDS
+- [ ] learn to do less crappy Rmarkdown doc
+
+
+# DIC with and without BA
+
+Best one is with min DIC
+
+| species | DIC with BA | DIC without BA | Best model |
+|---------|-------------|----------------| ---------- |
+| ABIBAL  | 303503.63   | 303172.48      | without BA |
+| ACERUB  | 118383.95   | 118372.79      | without BA |
+| BETALL  | 86056.14    | 86067.24       | with BA    |
+| ACESAC  | 96443.36    | 96443.91       | same       |
+| PICMAR  | 180206.13   | 180473.58      | with BA    |
+| PICGLA  | 99042.42    | 99035.78       | without BA |
+| BETPAP  | 171853.90   | 171273.91      | without BA |
+| POPTRE  | 108596.19   | 108222.15      | without BA |
+
+# deviance with and without BA
+
+| species | deviance with BA | deviance without BA | Best model |
+|---------|------------------|----------------------| ---------- |
+| ABIBAL  | 303420.43        | 303089.63            | without BA |
+| ACERUB  | 118302.98        | 118291.10            | without BA |
+| BETALL  | 85979.62         | 85986.92             | with BA    |
+| ACESAC  | 96368.04         | 96368.65             | same       |
+| PICMAR  | 180126.44        | 180389.62            | with BA    |
+| PICGLA  | 98956.28         | 98950.17             | without BA |
+| BETPAP  | 171770.47        | 171188.79            | without BA |
+| POPTRE  | 108510.65        | 108139.57            | without BA |
