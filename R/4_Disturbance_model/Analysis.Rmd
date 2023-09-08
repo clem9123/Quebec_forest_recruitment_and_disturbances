@@ -32,7 +32,7 @@ full_data <- full_data %>% filter(sp_code %in% Mysp, dom_bio %in% c(4,5))
 Load the models output for every species
 
 ```{r}
-Model_path = "output/heavy/output/" # impossible to upload on github for now because to big
+Model_path = "output/heavy/output_new_withoutBA/" # impossible to upload on github for now because to big
 for (sp in Mysp){
     assign(paste0("Model_", sp), readRDS(paste0(Model_path, sp, ".rds")))
 }
@@ -129,7 +129,7 @@ quadratic_plot("tmean")
 disturbance_pa <- disturbance_table("pa", FALSE)
 disturbance_nb <- disturbance_table("nb", FALSE)
 # Plot the results
-disturbance_plot(disturbance_pa, 50)
+disturbance_plot(disturbance_pa, 4)
 disturbance_plot(disturbance_nb, 50)
 ```
 

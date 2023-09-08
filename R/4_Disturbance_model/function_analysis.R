@@ -13,7 +13,7 @@ all_param_table <- function(transform = FALSE){
     ## Make the table by taking the mean and quantile of each parameter distribution
     # -------------------------------------------------------------------
 
-    Coef = c("tmean", "epmatorg", "epmatorg2", "cmi", "ba", "intercept", "ph", "ph2", "tmean2", "cmi2", "intercept", "sp")
+    Coef = c("tmean", "epmatorg", "cmi", "ba", "ph", "tmean2", "cmi2")
     # sp", "sp2", 
     all_param <- data.frame()
     for (sp in Mysp){
@@ -29,15 +29,15 @@ all_param_table <- function(transform = FALSE){
             var = param,
             type = part)) 
     }
-        #    ## pour conspecific
-        #    distrib_param <- model$BUGSoutput$sims.list[paste0(part,"_","intercept")][[1]][,2] - model$BUGSoutput$sims.list[paste0(part,"_","intercept")][[1]][,1]
-        #    all_param <- rbind(all_param, data.frame(
-        #        sp = sp,
-        #        mean = mean(distrib_param),
-        #        min = quantile(distrib_param, 0.025) %>% as.numeric(),
-        #        max = quantile(distrib_param, 0.975) %>% as.numeric(),
-        #        var = "sp",
-        #        type = part))
+            ## pour conspecific
+            distrib_param <- model$BUGSoutput$sims.list[paste0(part,"_","intercept")][[1]][,2] - model$BUGSoutput$sims.list[paste0(part,"_","intercept")][[1]][,1]
+            all_param <- rbind(all_param, data.frame(
+                sp = sp,
+                mean = mean(distrib_param),
+                min = quantile(distrib_param, 0.025) %>% as.numeric(),
+                max = quantile(distrib_param, 0.975) %>% as.numeric(),
+                var = "sp",
+                type = part))
             }
     }
 
