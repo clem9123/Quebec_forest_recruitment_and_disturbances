@@ -67,14 +67,6 @@ Climate change, Disturbances, Harvesting, Fire, Northward range shifts, Québec 
 
 ## p1: recruitment = critical step to migration
 
-<!--    Reordered and rephrased sentences to create a more coherent flow of ideas.
-    Enhanced clarity and conciseness by condensing certain expressions.
-    Used transition words and phrases to connect ideas and improve overall readability.
-    Incorporated consistent referencing format for citations.
-    Clarified the role of disturbances in shaping tree recruitment and succession dynamics.
-    Emphasized the potential of disturbances to influence future forest composition and distribution.
-    Strengthened the relationship between different sections of the introduction.
-    Maintained the original content while enhancing the overall structure and coherence.-->
 
 Climate change significantly impacts the entire tree life cycle, from recruitment to growth and mortality [@vanderwel_climate-related_2013; @zhang_half-century_2015], leading to modifications in population dynamics and species distribution. Given the long-term nature of growth and mortality processes, recruitment is expected to be the primary driver of climate-induced shifts [@woodall_indicator_2009]. Juvenile trees, being more sensitive to environmental variation than adult trees (**Walck et al. 2011**), can serve as an early indicator of species distribution shifts in response to climate warming [@anderson-teixeira_altered_2013; @zhu_failure_2012; @boisvert-marsh_shifting_2014; @sittaro_tree_2017]. Indeed, many tree species in eastern North America have shown northward shifts in their range limits and abundance distribution, with saplings displaying more pronounced changes than adult trees [@boisvert-marsh_shifting_2014; @sittaro_tree_2017; @fei_divergence_2017]. However, the relation between these shifts and climate warming is complex and often weak [@boisvert-marsh_shifting_2014; @sittaro_tree_2017; @fei_divergence_2017], suggesting that tree responses are influenced by a complex interplay of environmental drivers [@solarik_priority_2019; @carteron_soil_2020; @boisvertmarsh_divergent_2019; @leithead_northward_2010]. As successful recruitments beyond current range limits determine tree migration, understanding the conditions that facilitate or impede sapling establishment becomes pivotal in predicting future tree species distributions [@copenhaverparry_multiscale_2020].
 
