@@ -60,3 +60,6 @@ output/heavy/
 
 # html
 *.html
+
+# mac stuff
+*.DS_Store
