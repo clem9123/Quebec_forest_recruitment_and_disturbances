@@ -1,0 +1,7 @@
+^data/raw_data$
+^output$
+^Figure$
+^data/data$
+^data/final_data$
+^Pre-article\.Rmd$
+^LICENSE\.md$

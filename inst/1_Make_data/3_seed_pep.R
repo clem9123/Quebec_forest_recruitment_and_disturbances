@@ -1,7 +1,6 @@
 ### Formatting PEP saplings data from Quebec ####
 
 ### PACKAGES ####
-library(rgdal)
 library(sf)
 library(dplyr)
 library(tidyverse)

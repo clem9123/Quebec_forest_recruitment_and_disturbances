@@ -13,10 +13,9 @@
 
 ### PACKAGES ####
 
-require(sf)
-require(dplyr)
-require(tidyr)
-require(data.table)
+library(sf)
+library(dplyr)
+library(tidyr)
 
 ## DATA ####
 

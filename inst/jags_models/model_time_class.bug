@@ -15,7 +15,7 @@ model{
         IS_LPR[i] * (ba_lpr0 + ba_lpr1 * TS_LPR[i]) +
         IS_B[i] * (ba_b0 + ba_b1 * TS_B[i] + ba_b2 * pow(TS_B[i],2)) +
         IS_O[i] * (ba_o0 + ba_o1 * TS_O[i])
-    BA_res[i] <- BA[i] - mu_ba[i]
+        BA_res[i] <- BA[i] - mu_ba[i]
     }
 
     # Priors
@@ -93,6 +93,7 @@ model{
     pa_sp ~ dunif(-50,50)
     # perturbation
 
+    # class
     for (i in 1:5){
         pa_l[i] ~ dunif(-50,50)
         pa_pl[i] ~ dunif(-50,50)

@@ -108,9 +108,7 @@ retrieveClimateData(years = 1960:2020, info = "maxt", res = 60, geom = plot_xy, 
 retrieveClimateData(years = 1960:2020, info = "mint", res = 60, geom = plot_xy, path = "data/raw_data/clim")
 
 ### Format bioclimatic variables ####
-
 sg_60 <- readRDS("data/raw_data/clim/sg_60.rds")
-
 cmi_60 <- readRDS("data/raw_data/clim/cmi_60.rds")
 
 # Find NA values (from plots that are located at the margin of the climate raster)

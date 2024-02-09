@@ -30,12 +30,12 @@ Initial data are from the Minister : https://www.donneesquebec.ca/recherche/data
 download.file("https://diffusion.mffp.gouv.qc.ca/Diffusion/DonneeGratuite/Foret/DONNEES_FOR_ECO_SUD/Placettes_permanentes/PEP_GPKG.zip", destfile = "raw_data/PEP.zip")
 ```
 
-See beginning of `R/1_Make_data/tree_pep.R`
+See beginning of `inst/1_Make_data/tree_pep.R`
 
 Then all selection and modification on this data are made with the files from
-`R/1_Make_data` (1 to 8 have to bee run in order), the output dataframe is `data/full_data.RDS` and is the one I used for all following analyses
+`R/1_Make_data` (1 to 8 have to bee run in order), the output dataframe is `data/full_data.RData` and is the one I used for all following analyses
 
-It is not necessary to run all the code to make the data, you can just use the output `data/full_data.RDS` and start with the analyses part.
+It is not necessary to run all the code to make the data, you can just use the output `data/full_data.RData` and start with the analyses part.
 
 #### Code in data
 

@@ -385,3 +385,7 @@ labels = c("6","1","2","3","4","5"))) -> full_data
 full_data <- na.omit(full_data)
 
 save(full_data, scaling, file = "data/full_data.RData")
+
+
+save(full_data, file = "full_data.rda", compress = "xz")
+save(scaling, file = "scaling.rda", compress = "xz")

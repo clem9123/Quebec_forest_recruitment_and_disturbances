@@ -1,0 +1,33 @@
+Package: QuebecSaplingsRecruitment
+Type: Package
+Title: Research compendium for a study on the Impacts of disturbances on saplings recruitment
+Version: 0.0.0.9000
+Authors@R: c(
+    person("Clémentine", "de Montgolfier", role = c("aut", "cre"), 
+        email = "clementine.de.montgolfier@ens.psl.eu"),
+    person("Kevin", "Cazelles", role = c("aut"), email = "kevin.cazelles@gmail.com", comment = c(ORCID = "0000-0001-6619-9874")),
+    person("Marie-Hélène", "Brice", role = c("aut"), email = "marie-helene.brice@umontreal.ca", comment = c(ORCID = "0000-0001-9505-1860")))
+Description: Research compendium for a study on the Impacts of disturbances on saplings recruitment.
+URL: https://github.com/david-beauchesne/nceadfo
+BugReports: https://github.com/david-beauchesne/nceadfo/issues
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1
+Depends: 
+    R (>= 4.2)
+Imports:
+    cli,
+    dplyr,
+    fs,
+    ggplot2,
+    R2jags
+Suggests:
+    curl,
+    knitr,
+    mgcv,
+    rmarkdown,
+    sf,
+    testthat,
+    tidyr
