@@ -44,11 +44,11 @@ and run the model return a jags.parallel object.
 }}
 \examples{
 \dontrun{
-run_jags_model("ACERUB",  "model_time_class.bug", n.chains = 3, n.iter = 500)
+run_jags_model("ACERUB", "model_time_class.bug", n.chains = 3, n.iter = 500)
 }
 
 \dontrun{
 run_analyses(10, "model_time_class.bug", "output/heavy/withoutBA", 
- n.chains = 3, n.iter = 2000,)
+ n.chains = 3, n.iter = 2000)
 }
 }
