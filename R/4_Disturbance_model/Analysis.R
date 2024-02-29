@@ -19,6 +19,8 @@ Mysp <- c(
     "BETPAP", "POPTRE"
 )
 
+x=full_data %>%
+    filter(burn == 1)
 
 Temperate <- c("ACERUB", "ACESAC", "BETALL")
 Boreal <- c("ABIBAL", "PICGLA", "PICMAR")
@@ -33,7 +35,6 @@ burn <- c("b")
 # and scaling a dataframe with the scaling factor for each variables (mean and sd)
 full_data <- full_data %>%
     filter(sp_code %in% Mysp, dom_bio %in% c(4, 5))
-
 
 Model_path <- "output/heavy/output_new_withoutBA/" # impossible to upload on github for now because to big
 for (sp in Mysp) {
