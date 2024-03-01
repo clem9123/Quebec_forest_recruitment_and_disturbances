@@ -26,7 +26,7 @@ Clémentine de Montgolfier^1,2,3^, Marie-Hélène Brice*^1,2^,
 
 1. Jardin botanique de Montréal, 4101 Sherbrooke Est, Montréal, QC, Canada H1X 2B2 
 2. Institut de recherche en biologie végétale, Département de sciences biologiques, Université de Montréal, 4101 Sherbrooke Est, Montréal, QC, Canada H1X 2B2
-3. ton université? ENS?
+3. Département de Biologie, Ecole Normale Supérieure, Paris, France
 
 
 
@@ -86,7 +86,7 @@ The impacts of climate change on trees can be complex, with different tree speci
 
 Here, we analyzed the recruitment of 8 tree species across the boreal-temperate ecotone in Québec over the last five decades to (i) evaluate the spatio-temporal trend in sapling recruitment; (ii) investigate the effect of different disturbance types on recruitment while accounting for climate and local conditions and (iii) evaluate whether disturbances promote regeneration of temperate tree saplings in the boreal-temperate ecotone. Past studies on broad-scale recruitment response to disturbances have primarily focused on presence-absence data and did not distinguish disturbance types nor did they include time since disturbances [**REF**; @woodall_assessing_2013; @boisvertmarsh_divergent_2019]. We used sapling distribution and abundance data to quantify species response to climate change because quantitative changes within species ranges can vary without any observable range shift [@ehrlen_predicting_2015], and are very important for predicting forest trajectories [**REF**]. We focus on saplings with a diameter at breast height (DBH) between 1 and 9 cm of the most common species found in study area, representing more than 80% of the total basal area, namely three boreal species (*Abies balsamea*, *Picea glauca*, and *Picea mariana*), two pioneer species (*Betula papyrifera* and *Populus tremuloides*), and three temperate species (*Acer rubrum*, *Acer saccharum*, and *Betula alleghaniensis*).  
 
-We hypothesized that temperate species would increase in recruitment probability and abundance through time and towards higher latitudes contrary to boreal and pioneer species. We also expected that disturbances would promote tree recruitment by reducing canopy cover and increasing light availability, but that their effect would depend on their characteristics (type, severity) and on the species. For instance, shade intolerant species will benefit more from clearcuts than partial cuts in the short term, and inversely for shade intolerant species. Lastly, we also hypothesized that presence and abundance processes would respond differently to environmental drivers. 
+We hypothesized that temperate species would increase in recruitment probability and abundance through time and towards higher latitudes contrary to boreal and pioneer species. We also expected that disturbances would promote tree recruitment by reducing canopy cover and increasing light availability, but that their effect would depend on their characteristics (type, severity) and on the species. For instance, shade intolerant species will benefit more from clearcuts than partial cuts in the short term, and inversely for shade tolerant species. Lastly, we also hypothesized that presence and abundance processes would respond differently to environmental drivers. 
 
 
 # Materials and Methods 
