@@ -3,3 +3,4 @@
 export(list_species)
 export(run_analyses)
 export(run_jags_model)
+importFrom(utils,globalVariables)

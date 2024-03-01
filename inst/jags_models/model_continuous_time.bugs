@@ -1,0 +1,144 @@
+model{
+
+    #----------------------------------------#
+    #            MODEL PRESENCE              #
+    #----------------------------------------#
+
+    # Likelihood
+    #-------------
+
+    for (i in 1:N){
+    PRESENCE[i] ~ dbern(p[i])
+
+    logit(p[i]) <-
+        pa_intercept[IS_SPECIES[i] + 1] +
+        # soil
+        pa_epmatorg * EPMATORG[i] + pa_ph * PH[i] +
+        #pa_soil[SOIL[i]] +
+        # climate
+        pa_tmean * TMEAN[i] + pa_tmean2 * pow(TMEAN[i],2) +
+        pa_cmi * CMI[i] + pa_cmi2 * pow(CMI[i],2) +
+        # perturbation
+        pa_l[CL_L[i]] +
+        pa_pl[CL_PL[i]] +
+        pa_lpr[CL_LPR[i]] +
+        pa_b[CL_B[i]] +
+        pa_o[CL_O[i]] #+
+        # random effect
+        #pa_placette[PLACETTE[i]]
+    }
+
+    # Priors
+    #--------
+
+    # soil
+    pa_epmatorg ~ dunif(-50,50)
+    pa_ph ~ dunif(-50,50)
+    pa_soil[1] <- 0
+    for(i in 2:10){
+        pa_soil[i] ~ dunif(-50,50)
+    }
+    # climate
+    pa_tmean ~ dunif(-50,50)
+    pa_cmi ~ dunif(-50,50)
+    pa_tmean2 ~ dunif(-50,50)
+    pa_cmi2 ~ dunif(-50,50)
+    # biotic
+    pa_intercept[1] ~ dunif(-50,50)
+    pa_intercept[2] ~ dunif(-50,50)
+    pa_sp ~ dunif(-50,50)
+    # perturbation
+
+    # class
+    for (i in 1:5){
+        pa_l[i] ~ dunif(-50,50)
+        pa_pl[i] ~ dunif(-50,50)
+        pa_lpr[i] ~ dunif(-50,50)
+        pa_o[i] ~ dunif(-50,50)
+        pa_b[i] ~ dunif(-50,50)
+    }
+    for (i in 7:8){
+        pa_b[i] ~ dunif(-50,50)
+    }
+    pa_l[6] <- 0
+    pa_pl[6] <- 0
+    pa_lpr[6] <- 0
+    pa_b[6] <- 0
+    pa_o[6] <- 0
+    # random effect
+    for (i in 1:N_PLACETTE) {pa_placette[i] ~ dnorm(0, pa_taupl)}
+    pa_taupl ~ dunif(0.0001,20)
+
+    #----------------------------------------#
+    #            MODEL DENSITE               #
+    #----------------------------------------#
+
+    # Pareil que pour la présence, mais avec une log et tout les parametre en nb_X
+
+    # Likelihood
+    #-------------
+
+    for (i in 1:N){
+    DENSITE[i] ~ dpois(lambda[i] * PRESENCE[i])
+
+    log(lambda[i]) <-
+        nb_intercept[IS_SPECIES[i] + 1] +
+        # soil
+        nb_epmatorg * EPMATORG[i] + nb_ph * PH[i] +
+        #nb_soil[SOIL[i]] +
+        # climate
+        nb_tmean * TMEAN[i] + nb_tmean2 * pow(TMEAN[i],2) +
+        nb_cmi * CMI[i] + nb_cmi2 * pow(CMI[i],2) +
+        # biotic
+        nb_ba * BA_res[i] +
+        # perturbation
+        nb_l[CL_L[i]] +
+        nb_pl[CL_PL[i]] +
+        nb_lpr[CL_LPR[i]] +
+        nb_b[CL_B[i]] +
+        nb_o[CL_O[i]] #+
+        # random effect
+        #nb_placette[PLACETTE[i]]
+    }
+
+    # Priors
+    #--------
+
+    # soil
+    nb_epmatorg ~ dunif(-50,50)
+    nb_ph ~ dunif(-50,50)
+    nb_soil[1] <- 0
+    for(i in 2:10){
+        nb_soil[i] ~ dunif(-50,50)
+    }
+    # climate
+    nb_tmean ~ dunif(-50,50)
+    nb_cmi ~ dunif(-50,50)
+    nb_tmean2 ~ dunif(-50,50)
+    nb_cmi2 ~ dunif(-50,50)
+    # biotic
+    nb_ba ~ dunif(-50,50)
+    nb_intercept[1] ~ dunif(-50,50)
+    nb_intercept[2] ~ dunif(-50,50)
+    nb_sp ~ dunif(-50,50)
+    # perturbation
+
+    for (i in 1:5){
+        nb_l[i] ~ dunif(-50,50)
+        nb_pl[i] ~ dunif(-50,50)
+        nb_lpr[i] ~ dunif(-50,50)
+        nb_o[i] ~ dunif(-50,50)
+        nb_b[i] ~ dunif(-50,50)
+    }
+    for (i in 7:8){
+        nb_b[i] ~ dunif(-50,50)
+    }
+    nb_l[6] <- 0
+    nb_pl[6] <- 0
+    nb_lpr[6] <- 0
+    nb_b[6] <- 0
+    nb_o[6] <- 0
+    # random effect
+    for (i in 1:N_PLACETTE) {nb_placette[i] ~ dnorm(0, nb_taupl)}
+    nb_taupl ~ dunif(0.0001,20)
+}

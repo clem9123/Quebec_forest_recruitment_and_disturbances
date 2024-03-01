@@ -37,6 +37,10 @@ Function taking a species name as argument and running the jags model
 it uploads the data, transform it into a list (the usable object for JAGS)
 and run the model return a jags.parallel object.
 }
+\details{
+Note that the name of the model will be used to determibe what parameters
+are required.
+}
 \section{Functions}{
 \itemize{
 \item \code{run_analyses()}: Run analyses
@@ -44,11 +48,17 @@ and run the model return a jags.parallel object.
 }}
 \examples{
 \dontrun{
-run_jags_model("ACERUB", "model_time_class.bug", n.chains = 3, n.iter = 500)
+run_jags_model("ACERUB", "model_time_class_with_ba.bugs",
+    n.chains = 3, n.iter = 100, devel = TRUE
+)
+run_jags_model("ACERUB", "model_time_class_without_ba.bugs",
+    n.chains = 3, n.iter = 100, devel = TRUE
+)
 }
 
 \dontrun{
-run_analyses(10, "model_time_class.bug", "output/heavy/withoutBA", 
- n.chains = 3, n.iter = 2000)
+run_analyses(10, "model_time_class.bug", "output/heavy/withoutBA",
+    n.chains = 3, n.iter = 2000
+)
 }
 }

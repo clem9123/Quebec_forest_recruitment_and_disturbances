@@ -63,3 +63,4 @@ output/heavy/
 
 # mac stuff
 *.DS_Store
+compute_canada/**/*.rds

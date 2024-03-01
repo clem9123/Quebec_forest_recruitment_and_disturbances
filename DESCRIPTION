@@ -1,15 +1,15 @@
 Package: QuebecSaplingsRecruitment
 Type: Package
 Title: Research compendium for a study on the Impacts of disturbances on saplings recruitment
-Version: 0.0.0.9001
+Version: 0.0.0.9002
 Authors@R: c(
     person("Clémentine", "de Montgolfier", role = c("aut", "cre"), 
         email = "clementine.de.montgolfier@ens.psl.eu"),
     person("Kevin", "Cazelles", role = c("aut"), email = "kevin.cazelles@gmail.com", comment = c(ORCID = "0000-0001-6619-9874")),
     person("Marie-Hélène", "Brice", role = c("aut"), email = "marie-helene.brice@umontreal.ca", comment = c(ORCID = "0000-0001-9505-1860")))
 Description: Research compendium for a study on the Impacts of disturbances on saplings recruitment.
-URL: https://github.com/david-beauchesne/nceadfo
-BugReports: https://github.com/david-beauchesne/nceadfo/issues
+URL: https://github.com/LaboBrice/Quebec_forest_recruitment_and_disturbances
+BugReports: https://github.com/LaboBrice/Quebec_forest_recruitment_and_disturbances/issues
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -21,11 +21,12 @@ Imports:
     cli,
     dplyr,
     fs,
-    ggplot2,
-    R2jags
+    R2jags,
+    utils
 Suggests:
     curl,
     knitr,
+    ggplot2,
     mgcv,
     rmarkdown,
     sf,
