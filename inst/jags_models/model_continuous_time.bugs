@@ -23,9 +23,7 @@ model{
         pa_pl[CL_PL[i]] +
         pa_lpr[CL_LPR[i]] +
         pa_b[CL_B[i]] +
-        pa_o[CL_O[i]] #+
-        # random effect
-        #pa_placette[PLACETTE[i]]
+        pa_o[CL_O[i]]
     }
 
     # Priors
@@ -65,9 +63,6 @@ model{
     pa_lpr[6] <- 0
     pa_b[6] <- 0
     pa_o[6] <- 0
-    # random effect
-    for (i in 1:N_PLACETTE) {pa_placette[i] ~ dnorm(0, pa_taupl)}
-    pa_taupl ~ dunif(0.0001,20)
 
     #----------------------------------------#
     #            MODEL DENSITE               #
@@ -96,9 +91,7 @@ model{
         nb_pl[CL_PL[i]] +
         nb_lpr[CL_LPR[i]] +
         nb_b[CL_B[i]] +
-        nb_o[CL_O[i]] #+
-        # random effect
-        #nb_placette[PLACETTE[i]]
+        nb_o[CL_O[i]] 
     }
 
     # Priors
@@ -138,7 +131,4 @@ model{
     nb_lpr[6] <- 0
     nb_b[6] <- 0
     nb_o[6] <- 0
-    # random effect
-    for (i in 1:N_PLACETTE) {nb_placette[i] ~ dnorm(0, nb_taupl)}
-    nb_taupl ~ dunif(0.0001,20)
 }

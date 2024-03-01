@@ -131,14 +131,14 @@ make_jags_data <- function(sp, devel = FALSE, with_ba = TRUE) {
         CL_PL = data$cl_partial_logging,
         CL_LPR = data$cl_logging_pr,
         CL_B = data$cl_burn,
-        CL_O = data$cl_outbreak
+        CL_O = data$cl_outbreak,
+        BA = data$tree_ba_sc
     )
 
     if (with_ba) {
         out <- c(
             out,
             list(
-                BA = data$tree_ba_sc,
                 IS_PL = data$is_partial_logging,
                 IS_L = data$is_logging,
                 IS_LPR = data$is_logging_pr,
@@ -173,14 +173,12 @@ get_parameters <- function(time_class = TRUE, with_ba = TRUE) {
         "pa_tmean", "pa_tmean2", "pa_cmi", "pa_cmi2",
         "pa_sp", "pa_sp2", "pa_ba",
         "pa_l", "pa_pl", "pa_lpr", "pa_b", "pa_o",
-        "pa_taupl",
         # nb (abundance)
         "nb_intercept",
         "nb_epmatorg", "nb_ph", "nb_soil",
         "nb_tmean", "nb_tmean2", "nb_cmi", "nb_cmi2",
         "nb_sp", "nb_sp2", "nb_ba",
-        "nb_l", "nb_pl", "nb_lpr", "nb_b", "nb_o",
-        "nb_taupl"
+        "nb_l", "nb_pl", "nb_lpr", "nb_b", "nb_o"
     )
     out
 }

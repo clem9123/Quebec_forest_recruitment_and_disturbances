@@ -110,8 +110,8 @@ model{
     pa_b[6] <- 0
     pa_o[6] <- 0
     # random effect
-    for (i in 1:N_PLACETTE) {pa_placette[i] ~ dnorm(0, pa_taupl)}
-    pa_taupl ~ dunif(0.0001,20)
+    #for (i in 1:N_PLACETTE) {pa_placette[i] ~ dnorm(0, pa_taupl)}
+    #pa_taupl ~ dunif(0.0001,20)
 
     #----------------------------------------#
     #            MODEL DENSITE               #
@@ -183,6 +183,6 @@ model{
     nb_b[6] <- 0
     nb_o[6] <- 0
     # random effect
-    for (i in 1:N_PLACETTE) {nb_placette[i] ~ dnorm(0, nb_taupl)}
-    nb_taupl ~ dunif(0.0001,20)
+    #for (i in 1:N_PLACETTE) {nb_placette[i] ~ dnorm(0, nb_taupl)}
+    #nb_taupl ~ dunif(0.0001,20)
 }
