@@ -15,11 +15,9 @@ list_model <- function() {
     path_to_models() |> list.files()
 }
 
-
 path_to_models <- function(...) {
     fs::path_package("QuebecSaplingsRecruitment", "jags_models", ...)
 }
-
 
 message_duration <- function(nsec) {
     nh <- nsec %/% 3600
@@ -33,5 +31,19 @@ message_duration <- function(nsec) {
     )
 }
 
-
 globalVariables(c("sp_code"))
+
+
+get_means <- function(output, perturb = "l", type = "pa", var = "peak") {
+    out <- output$BUGSoutput$mean[paste(type, var, perturb, sep = "_")] 
+    names(out)  <- NULL
+    out
+}
+
+plot_effect <- function(eff, peak, var) {
+    x <- seq(0.01, 100, 0.01)
+    y <- eff * stats::dlnorm(x, peak, var)
+    plot(x, y, type = "l")
+}
+
+# plot_effect()

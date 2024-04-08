@@ -34,7 +34,7 @@ run_jags_model <- function(sp, model_file, filename = paste0(sp, ".rds"),
     # use basal area submodel
     with_ba <- grepl("with_ba", model_file)
     time_class <- grepl("time_class", model_file)
-    if (!time_class && !grepl("continuous_time")) {
+    if (!time_class && !grepl("continuous_time", model_file)) {
         # safety check
         stop("jags model filename is not valid.")
     }
@@ -46,6 +46,7 @@ run_jags_model <- function(sp, model_file, filename = paste0(sp, ".rds"),
     jags_data <- make_jags_data(sp, devel, with_ba)
     # 3. Run model
     param <- get_parameters(time_class, with_ba)
+    print(param)
 
     out <- R2jags::jags.parallel(
         model.file = path_to_models(model_file),
@@ -165,20 +166,69 @@ get_parameters <- function(time_class = TRUE, with_ba = TRUE) {
             "ba_o0", "ba_o1"
         )
     }
-    out <- c(
-        out,
-        # pa (presence/absence)
-        "pa_intercept",
-        "pa_epmatorg", "pa_ph", "pa_soil",
-        "pa_tmean", "pa_tmean2", "pa_cmi", "pa_cmi2",
-        "pa_sp", "pa_sp2", "pa_ba",
-        "pa_l", "pa_pl", "pa_lpr", "pa_b", "pa_o",
-        # nb (abundance)
-        "nb_intercept",
-        "nb_epmatorg", "nb_ph", "nb_soil",
-        "nb_tmean", "nb_tmean2", "nb_cmi", "nb_cmi2",
-        "nb_sp", "nb_sp2", "nb_ba",
-        "nb_l", "nb_pl", "nb_lpr", "nb_b", "nb_o"
-    )
+    if (time_class) {
+        out <- c(
+            out,
+            # pa (presence/absence)
+            "pa_intercept",
+            "pa_epmatorg", "pa_ph", "pa_soil",
+            "pa_tmean", "pa_tmean2", "pa_cmi", "pa_cmi2",
+            "pa_sp", "pa_sp2", "pa_ba",
+            "pa_l", "pa_pl", "pa_lpr", "pa_b", "pa_o",
+            # nb (abundance)
+            "nb_intercept",
+            "nb_epmatorg", "nb_ph", "nb_soil",
+            "nb_tmean", "nb_tmean2", "nb_cmi", "nb_cmi2",
+            "nb_sp", "nb_sp2", "nb_ba",
+            "nb_l", "nb_pl", "nb_lpr", "nb_b", "nb_o"
+        )
+    } else {
+        out <- c(
+            out,
+            # pa (presence/absence)
+            "pa_intercept",
+            "pa_epmatorg", "pa_ph", "pa_soil",
+            "pa_tmean", "pa_tmean2", "pa_cmi", "pa_cmi2",
+            "pa_sp", "pa_sp2", "pa_ba",
+            "pa_l", "pa_pl", "pa_lpr", "pa_b", "pa_o",
+            # nb (abundance)
+            "nb_intercept",
+            "nb_epmatorg", "nb_ph", "nb_soil",
+            "nb_tmean", "nb_tmean2", "nb_cmi", "nb_cmi2",
+            "nb_sp", "nb_sp2", "nb_ba",
+            # perturb
+            "pa_eff_l",
+            "pa_eff_pl",
+            "pa_eff_lpr",
+            "pa_eff_b",
+            "pa_eff_o",
+            "pa_peak_l",
+            "pa_peak_pl",
+            "pa_peak_lpr",
+            "pa_peak_b",
+            "pa_peak_o",
+            "pa_var_l",
+            "pa_var_pl",
+            "pa_var_lpr",
+            "pa_var_b",
+            "pa_var_o",
+            "nb_eff_l",
+            "nb_eff_pl",
+            "nb_eff_lpr",
+            "nb_eff_b",
+            "nb_eff_o",
+            "nb_peak_l",
+            "nb_peak_pl",
+            "nb_peak_lpr",
+            "nb_peak_b",
+            "nb_peak_o",
+            "nb_var_l",
+            "nb_var_pl",
+            "nb_var_lpr",
+            "nb_var_b",
+            "nb_var_o"
+
+        )
+    }
     out
 }
