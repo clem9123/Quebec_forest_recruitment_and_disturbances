@@ -4,7 +4,10 @@
 #' @importFrom utils globalVariables
 #'
 list_species <- function() {
-    c("ACERUB", "ACESAC", "ABIBAL", "ACERUB", "ACESAC", "BETALL", "PICMAR", "PICGLA", "BETPAP", "POPTRE") |> sort()
+    c(
+        "ABIBAL", "ACERUB", "ACESAC", "BETALL", "BETPAP", "PICGLA",
+        "PICMAR", "POPTRE"
+    )
 }
 
 #' @describeIn list_species list JAGS model files
