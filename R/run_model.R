@@ -104,7 +104,7 @@ make_jags_data <- function(sp, devel = FALSE, with_ba = TRUE) {
     data <- QuebecSaplingsRecruitment::full_data |>
         dplyr::filter(sp_code == sp)
     if (devel) {
-        data <- data |> dplyr::sample_n(2000)
+        data <- data |> dplyr::sample_n(2500)
     }
 
     # create the list of data to be used in the model

@@ -20,11 +20,11 @@ model{
         # basal area
         pa_ba * BA[i] +
         # perturbation
-        pa_eff_l * exp(-(pow(ifelse(TS_L[i]==0, 200, TS_L[i]) - pa_peak_l),2)/pa_var_l) + 
-        pa_eff_pl * exp(-(pow(ifelse(TS_PL[i]==0, 200, TS_PL[i]) - pa_peak_pl),2)/ pa_var_pl) + 
-        pa_eff_lpr * exp(-(pow(ifelse(TS_LPR[i]==0, 200, TS_LPR[i]) - pa_peak_lpr),2)/pa_var_lpr) + 
-        pa_eff_b * exp(-(pow(ifelse(TS_B[i]==0, 200, TS_B[i]) - pa_peak_b),2)/pa_var_b) + 
-        pa_eff_o * exp(-(pow(ifelse(TS_O[i]==0, 200, TS_O[i]) - pa_peak_o),2)/pa_var_o)
+        pa_eff_l * dlnorm(ifelse(TS_L[i]==0, 200, TS_L[i]), pa_peak_l, pa_var_l) + 
+        pa_eff_pl * dlnorm(ifelse(TS_PL[i]==0, 200, TS_PL[i]), pa_peak_pl, pa_var_pl) + 
+        pa_eff_lpr * dlnorm(ifelse(TS_LPR[i]==0, 200, TS_LPR[i]), pa_peak_lpr, pa_var_lpr) + 
+        pa_eff_b * dlnorm(ifelse(TS_B[i]==0, 200, TS_B[i]), pa_peak_b, pa_var_b) + 
+        pa_eff_o * dlnorm(ifelse(TS_O[i]==0, 200, TS_O[i]), pa_peak_o, pa_var_o)
     }
 
     # Priors
@@ -42,22 +42,22 @@ model{
     pa_ba ~ dnorm(0, 5)
     pa_intercept[1] ~ dnorm(0, 5)
     pa_intercept[2] ~ dnorm(0, 5)
-    # perturbations
+    # perturbation
     pa_eff_l ~ dnorm(0, 5)
     pa_eff_pl ~ dnorm(0, 5)
     pa_eff_lpr ~ dnorm(0, 5)
     pa_eff_b ~ dnorm(0, 5)
     pa_eff_o ~ dnorm(0, 5)
-    pa_peak_l ~ dchisqr(20)
-    pa_peak_pl ~ dchisqr(20)
-    pa_peak_lpr ~ dchisqr(20)
-    pa_peak_b ~ dchisqr(20)
-    pa_peak_o ~ dchisqr(20)
-    pa_var_l ~ dchisqr(10)
-    pa_var_pl ~ dchisqr(10)
-    pa_var_lpr ~ dchisqr(10)
-    pa_var_b ~ dchisqr(10)
-    pa_var_o ~ dchisqr(10)
+    pa_peak_l ~ dchisqr(3)
+    pa_peak_pl ~ dchisqr(3)
+    pa_peak_lpr ~ dchisqr(3)
+    pa_peak_b ~ dchisqr(3)
+    pa_peak_o ~ dchisqr(3)
+    pa_var_l ~ dchisqr(0.5)
+    pa_var_pl ~ dchisqr(0.5)
+    pa_var_lpr ~ dchisqr(0.5)
+    pa_var_b ~ dchisqr(0.5)
+    pa_var_o ~ dchisqr(0.5)
 
     
     #----------------------------------------#
@@ -81,12 +81,12 @@ model{
         nb_cmi * CMI[i] + nb_cmi2 * pow(CMI[i],2) +
         # biotic
         nb_ba * BA[i] +
-        # perturbations
-        nb_eff_l * exp(-(pow(ifelse(TS_L[i]==0, 200, TS_L[i]) - nb_peak_l),2)/nb_var_l) + 
-        nb_eff_pl * exp(-(pow(ifelse(TS_PL[i]==0, 200, TS_PL[i]) - nb_peak_pl),2)/nb_var_pl) + 
-        nb_eff_lpr * exp(-(pow(ifelse(TS_LPR[i]==0, 200, TS_LPR[i]) - nb_peak_lpr),2)/nb_var_lpr) + 
-        nb_eff_b * exp(-(pow(ifelse(TS_B[i]==0, 200, TS_B[i]) - nb_peak_b),2)/nb_var_b) + 
-        nb_eff_o * exp(-(pow(ifelse(TS_O[i]==0, 200, TS_O[i]) - nb_peak_o),2)/nb_var_o)
+        # perturbation
+        nb_eff_l * dlnorm(ifelse(TS_L[i]==0, 200, TS_L[i]), nb_peak_l, nb_var_l) + 
+        nb_eff_pl * dlnorm(ifelse(TS_PL[i]==0, 200, TS_PL[i]), nb_peak_pl, nb_var_pl) + 
+        nb_eff_lpr * dlnorm(ifelse(TS_LPR[i]==0, 200, TS_LPR[i]), nb_peak_lpr, nb_var_lpr) + 
+        nb_eff_b * dlnorm(ifelse(TS_B[i]==0, 200, TS_B[i]), nb_peak_b, nb_var_b) + 
+        nb_eff_o * dlnorm(ifelse(TS_O[i]==0, 200, TS_O[i]), nb_peak_o, nb_var_o)
     }
 
     # Priors
@@ -109,14 +109,14 @@ model{
     nb_eff_lpr ~ dnorm(0, 5)
     nb_eff_b ~ dnorm(0, 5)
     nb_eff_o ~ dnorm(0, 5)
-    nb_peak_l ~ dchisqr(20)
-    nb_peak_pl ~ dchisqr(20)
-    nb_peak_lpr ~ dchisqr(20)
-    nb_peak_b ~ dchisqr(20)
-    nb_peak_o ~ dchisqr(20)
-    nb_var_l ~ dchisqr(10)
-    nb_var_pl ~ dchisqr(10)
-    nb_var_lpr ~ dchisqr(10)
-    nb_var_b ~ dchisqr(10)
-    nb_var_o ~ dchisqr(10)
+    nb_peak_l ~ dchisqr(3)
+    nb_peak_pl ~ dchisqr(3)
+    nb_peak_lpr ~ dchisqr(3)
+    nb_peak_b ~ dchisqr(3)
+    nb_peak_o ~ dchisqr(3)
+    nb_var_l ~ dchisqr(0.5)
+    nb_var_pl ~ dchisqr(0.5)
+    nb_var_lpr ~ dchisqr(0.5)
+    nb_var_b ~ dchisqr(0.5)
+    nb_var_o ~ dchisqr(0.5)
 }

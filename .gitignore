@@ -69,3 +69,4 @@ compute_canada/**/*.rds
 *.rds
 TODO.md
 Figure/mh2
+tmp

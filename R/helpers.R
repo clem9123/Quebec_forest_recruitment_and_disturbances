@@ -40,10 +40,10 @@ get_means <- function(output, perturb = "l", type = "pa", var = "peak") {
     out
 }
 
-plot_effect <- function(eff, peak, var) {
+plot_effect <- function(eff, peak, var, ...) {
     x <- seq(0.01, 100, 0.01)
-    y <- eff * stats::dlnorm(x, peak, var)
-    plot(x, y, type = "l")
+    y <- as.numeric(eff) * stats::dlnorm(x, peak, var)
+    plot(x, y, type = "l", ...)
 }
 
 # plot_effect()
