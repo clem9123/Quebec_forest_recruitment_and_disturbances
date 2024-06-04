@@ -20,11 +20,11 @@ model{
         # basal area
         pa_ba * BA[i] +
         # perturbation
-        pa_eff_l * exp(-(pow(ifelse(TS_L[i]==0, 200, TS_L[i]) - pa_peak_l),2)/pa_var_l) + 
-        pa_eff_pl * exp(-(pow(ifelse(TS_PL[i]==0, 200, TS_PL[i]) - pa_peak_pl),2)/ pa_var_pl) + 
-        pa_eff_lpr * exp(-(pow(ifelse(TS_LPR[i]==0, 200, TS_LPR[i]) - pa_peak_lpr),2)/pa_var_lpr) + 
-        pa_eff_b * exp(-(pow(ifelse(TS_B[i]==0, 200, TS_B[i]) - pa_peak_b),2)/pa_var_b) + 
-        pa_eff_o * exp(-(pow(ifelse(TS_O[i]==0, 200, TS_O[i]) - pa_peak_o),2)/pa_var_o)
+        pa_eff_l * exp(-(pow(ifelse(TS_L[i]==0, 200, TS_L[i]) - pa_peak_l,2))/pa_var_l) + 
+        pa_eff_pl * exp(-(pow(ifelse(TS_PL[i]==0, 200, TS_PL[i]) - pa_peak_pl,2))/ pa_var_pl) + 
+        pa_eff_lpr * exp(-(pow(ifelse(TS_LPR[i]==0, 200, TS_LPR[i]) - pa_peak_lpr,2))/pa_var_lpr) + 
+        pa_eff_b * exp(-(pow(ifelse(TS_B[i]==0, 200, TS_B[i]) - pa_peak_b,2))/pa_var_b) + 
+        pa_eff_o * exp(-(pow(ifelse(TS_O[i]==0, 200, TS_O[i]) - pa_peak_o,2))/pa_var_o)
     }
 
     # Priors
@@ -82,11 +82,11 @@ model{
         # biotic
         nb_ba * BA[i] +
         # perturbations
-        nb_eff_l * exp(-(pow(ifelse(TS_L[i]==0, 200, TS_L[i]) - nb_peak_l),2)/nb_var_l) + 
-        nb_eff_pl * exp(-(pow(ifelse(TS_PL[i]==0, 200, TS_PL[i]) - nb_peak_pl),2)/nb_var_pl) + 
-        nb_eff_lpr * exp(-(pow(ifelse(TS_LPR[i]==0, 200, TS_LPR[i]) - nb_peak_lpr),2)/nb_var_lpr) + 
-        nb_eff_b * exp(-(pow(ifelse(TS_B[i]==0, 200, TS_B[i]) - nb_peak_b),2)/nb_var_b) + 
-        nb_eff_o * exp(-(pow(ifelse(TS_O[i]==0, 200, TS_O[i]) - nb_peak_o),2)/nb_var_o)
+        nb_eff_l * exp(-(pow(ifelse(TS_L[i]==0, 200, TS_L[i]) - nb_peak_l,2))/nb_var_l) + 
+        nb_eff_pl * exp(-(pow(ifelse(TS_PL[i]==0, 200, TS_PL[i]) - nb_peak_pl,2))/nb_var_pl) + 
+        nb_eff_lpr * exp(-(pow(ifelse(TS_LPR[i]==0, 200, TS_LPR[i]) - nb_peak_lpr,2))/nb_var_lpr) + 
+        nb_eff_b * exp(-(pow(ifelse(TS_B[i]==0, 200, TS_B[i]) - nb_peak_b,2))/nb_var_b) + 
+        nb_eff_o * exp(-(pow(ifelse(TS_O[i]==0, 200, TS_O[i]) - nb_peak_o,2))/nb_var_o)
     }
 
     # Priors

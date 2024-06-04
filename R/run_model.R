@@ -25,6 +25,9 @@
 #' run_jags_model("ACERUB", "model_time_class_without_ba.bugs",
 #'     n.chains = 3, n.iter = 100, devel = TRUE
 #' )
+#' run_jags_model("ACERUB", "model_continuous_time_gaussian.bugs",
+#'     n.chains = 3, n.iter = 100, devel = TRUE
+#' )
 #' }
 #'
 run_jags_model <- function(sp, model_file, filename = paste0(sp, ".rds"),

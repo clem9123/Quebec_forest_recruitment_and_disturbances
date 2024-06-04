@@ -46,4 +46,11 @@ plot_effect <- function(eff, peak, var, ...) {
     plot(x, y, type = "l", ...)
 }
 
+plot_effect_gaussian <- function(eff, peak, var, ...) {
+    x <- seq(0.01, 100, 0.01)
+    y <- as.numeric(eff) * exp(-((x - peak)^2)/var)
+    plot(x, y, type = "l", ...)
+}
+
+
 # plot_effect()
