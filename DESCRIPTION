@@ -1,7 +1,7 @@
 Package: QuebecSaplingsRecruitment
 Type: Package
 Title: Research compendium for a study on the Impacts of disturbances on saplings recruitment
-Version: 0.0.0.9005
+Version: 0.0.0.9007
 Authors@R: c(
     person("Clémentine", "de Montgolfier", role = c("aut", "cre"), 
         email = "clementine.de.montgolfier@ens.psl.eu"),

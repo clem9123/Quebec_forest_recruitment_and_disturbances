@@ -52,5 +52,10 @@ plot_effect_gaussian <- function(eff, peak, var, ...) {
     plot(x, y, type = "l", ...)
 }
 
+plot_effect_polynomial <- function(coef1, coef2, coef3, ...) {
+    x <- seq(0.01, 10, 0.01)
+    y <- coef1 * x + coef2 * x^2 + coef3 * x^3
+    plot(x, y, type = "l", ...)
+}
 
 # plot_effect()

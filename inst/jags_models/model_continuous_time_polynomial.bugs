@@ -1,0 +1,123 @@
+model{
+
+    #------------------------------------------#
+    #     MODEL PRESENCE CONTINUOUS TIME       #
+    #     polynomial with a degree of 3        #
+    #------------------------------------------#
+
+    # Likelihood
+    #-------------
+
+    for (i in 1:N){
+    PRESENCE[i] ~ dbern(p[i])
+
+    logit(p[i]) <-
+        pa_intercept[IS_SPECIES[i] + 1] +
+        # soil
+        pa_epmatorg * EPMATORG[i] + pa_ph * PH[i] +
+        # climate
+        pa_tmean * TMEAN[i] + pa_tmean2 * pow(TMEAN[i],2) +
+        pa_cmi * CMI[i] + pa_cmi2 * pow(CMI[i],2) +
+        # basal area
+        pa_ba * BA[i] +
+        # perturbations
+        pa_coef1_l * TS_L[i] + pa_coef2_l * pow(TS_L[i],2) + pa_coef3_l * pow(TS_L[i],3) +
+        pa_coef1_pl * TS_PL[i] + pa_coef2_pl * pow(TS_PL[i],2) + pa_coef3_pl * pow(TS_PL[i],3) + 
+        pa_coef1_lpr * TS_LPR[i] + pa_coef2_lpr * pow(TS_LPR[i],2) + pa_coef3_lpr * pow(TS_LPR[i],3) + 
+        pa_coef1_b * TS_B[i] + pa_coef2_b * pow(TS_B[i],2) + pa_coef3_b * pow(TS_B[i],3) + 
+        pa_coef1_o * TS_O[i] + pa_coef2_o * pow(TS_O[i],2) + pa_coef3_o * pow(TS_O[i],3)
+    }
+
+    # Priors
+    #--------
+
+    # soil
+    pa_epmatorg ~ dnorm(0, 5)
+    pa_ph ~ dnorm(0, 5)
+    # climate
+    pa_tmean ~ dnorm(0, 5)
+    pa_cmi ~ dnorm(0, 5)
+    pa_tmean2 ~ dnorm(0, 5)
+    pa_cmi2 ~ dnorm(0, 5)
+    # biotic
+    pa_ba ~ dnorm(0, 5)
+    pa_intercept[1] ~ dnorm(0, 5)
+    pa_intercept[2] ~ dnorm(0, 5)
+    # perturbations
+    pa_coef1_l ~ dnorm(0, 5)
+    pa_coef1_pl ~ dnorm(0, 5)
+    pa_coef1_lpr ~ dnorm(0, 5)
+    pa_coef1_b ~ dnorm(0, 5)
+    pa_coef1_o ~ dnorm(0, 5)
+    pa_coef2_l ~ dnorm(0, 5)
+    pa_coef2_pl ~ dnorm(0, 5)
+    pa_coef2_lpr ~ dnorm(0, 5)
+    pa_coef2_b ~ dnorm(0, 5)
+    pa_coef2_o ~ dnorm(0, 5)
+    pa_coef3_l ~ dnorm(0, 5)
+    pa_coef3_pl ~ dnorm(0, 5)
+    pa_coef3_lpr ~ dnorm(0, 5)
+    pa_coef3_b ~ dnorm(0, 5)
+    pa_coef3_o ~ dnorm(0, 5)
+
+    
+    #----------------------------------------#
+    #            MODEL DENSITE               #
+    #----------------------------------------#
+
+    # Pareil que pour la présence, mais avec une log et tout les parametre en nb_X
+
+    # Likelihood
+    #-------------
+
+    for (i in 1:N){
+    DENSITE[i] ~ dpois(lambda[i] * PRESENCE[i])
+
+    log(lambda[i]) <-
+        nb_intercept[IS_SPECIES[i] + 1] +
+        # soil
+        nb_epmatorg * EPMATORG[i] + nb_ph * PH[i] +
+        # climate
+        nb_tmean * TMEAN[i] + nb_tmean2 * pow(TMEAN[i],2) +
+        nb_cmi * CMI[i] + nb_cmi2 * pow(CMI[i],2) +
+        # biotic
+        nb_ba * BA[i] + 
+        # perturbations
+        nb_coef1_l * TS_L[i] + nb_coef2_l * pow(TS_L[i],2) + nb_coef3_l * pow(TS_L[i],3) + 
+        nb_coef1_pl * TS_PL[i] + nb_coef2_pl * pow(TS_PL[i],2) + nb_coef3_pl * pow(TS_PL[i],3) + 
+        nb_coef1_lpr * TS_LPR[i] + nb_coef2_lpr * pow(TS_LPR[i],2) + nb_coef3_lpr * pow(TS_LPR[i],3) + 
+        nb_coef1_b * TS_B[i] + nb_coef2_b * pow(TS_B[i],2) + nb_coef3_b * pow(TS_B[i],3) + 
+        nb_coef1_o * TS_O[i] + nb_coef2_o * pow(TS_O[i],2) + nb_coef3_o * pow(TS_O[i],3)
+    }
+
+    # Priors
+    #--------
+    # soil
+    nb_epmatorg ~ dnorm(0, 5)
+    nb_ph ~ dnorm(0, 5)
+    # climate
+    nb_tmean ~ dnorm(0, 5)
+    nb_cmi ~ dnorm(0, 5)
+    nb_tmean2 ~ dnorm(0, 5)
+    nb_cmi2 ~ dnorm(0, 5)
+    # biotic
+    nb_ba ~ dnorm(0, 5)
+    nb_intercept[1] ~ dnorm(0, 5)
+    nb_intercept[2] ~ dnorm(0, 5)
+    # perturbations
+    nb_coef1_l ~ dnorm(0, 5)
+    nb_coef1_pl ~ dnorm(0, 5)
+    nb_coef1_lpr ~ dnorm(0, 5)
+    nb_coef1_b ~ dnorm(0, 5)
+    nb_coef1_o ~ dnorm(0, 5)
+    nb_coef2_l ~ dnorm(0, 5)
+    nb_coef2_pl ~ dnorm(0, 5)
+    nb_coef2_lpr ~ dnorm(0, 5)
+    nb_coef2_b ~ dnorm(0, 5)
+    nb_coef2_o ~ dnorm(0, 5)
+    nb_coef3_l ~ dnorm(0, 5)
+    nb_coef3_pl ~ dnorm(0, 5)
+    nb_coef3_lpr ~ dnorm(0, 5)
+    nb_coef3_b ~ dnorm(0, 5)
+    nb_coef3_o ~ dnorm(0, 5)
+}

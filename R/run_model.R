@@ -28,6 +28,9 @@
 #' run_jags_model("ACERUB", "model_continuous_time_gaussian.bugs",
 #'     n.chains = 3, n.iter = 100, devel = TRUE
 #' )
+#' run_jags_model("ACERUB", "model_continuous_time_polynomial.bugs",
+#'     n.chains = 3, n.iter = 100, devel = TRUE
+#' )
 #' }
 #'
 run_jags_model <- function(sp, model_file, filename = paste0(sp, ".rds"),
@@ -37,10 +40,29 @@ run_jags_model <- function(sp, model_file, filename = paste0(sp, ".rds"),
     # use basal area submodel
     with_ba <- grepl("with_ba", model_file)
     time_class <- grepl("time_class", model_file)
+    if (time_class) {
+        cli::cli_alert_info("Using time classes")
+        if (with_ba) {
+            cli::cli_alert_info("Using basal area submodel")
+        }
+    } else {
+        if (!grepl("continuous_time", model_file)) {
+            stop("jags model filename is not valid.")
+        }
+        cli::cli_alert_info("Using continuous time")
+        # using the name of the file to determine whether polynomial or gaussian is used
+        poly <- grepl("polynomial", model_file)
+        if (poly) {
+            cli::cli_alert_info("Using a polynomial degree 3 for perturbations")
+        } else {
+            cli::cli_alert_info("Using gaussian curves for perturbations")
+        }
+    }
     if (!time_class && !grepl("continuous_time", model_file)) {
         # safety check
         stop("jags model filename is not valid.")
     }
+
 
     # 1. Start timer
     begin <- Sys.time()
@@ -48,8 +70,7 @@ run_jags_model <- function(sp, model_file, filename = paste0(sp, ".rds"),
     # 2. Load data
     jags_data <- make_jags_data(sp, devel, with_ba)
     # 3. Run model
-    param <- get_parameters(time_class, with_ba)
-    print(param)
+    param <- get_parameters(time_class, poly, with_ba)
 
     out <- R2jags::jags.parallel(
         model.file = path_to_models(model_file),
@@ -121,11 +142,11 @@ make_jags_data <- function(sp, devel = FALSE, with_ba = TRUE) {
         PH = data$ph_humus_sc,
         IS_SPECIES = data$have_been_species, # have_been_species_recrues
         NB_SP = data$tree_nb_sp,
-        TS_L = data$logging_sc, # TS = Time since
-        TS_PL = data$partial_logging_sc,
-        TS_LPR = data$logging_pr_sc,
-        TS_B = data$burn_sc,
-        TS_O = data$outbreak_sc,
+        TS_L = data$logging_sc |> scale(center = FALSE) |> as.numeric(),
+        TS_PL = data$partial_logging_sc |> scale(center = FALSE) |> as.numeric(),
+        TS_LPR = data$logging_pr_sc |> scale(center = FALSE) |> as.numeric(),
+        TS_B = data$burn_sc |> scale(center = FALSE) |> as.numeric(),
+        TS_O = data$outbreak_sc |> scale(center = FALSE) |> as.numeric(),
         PLACETTE = data$id_pe_sc,
         N_PLACETTE = max(data$id_pe_sc),
         TMEAN = data$an_meanT_sc,
@@ -138,6 +159,7 @@ make_jags_data <- function(sp, devel = FALSE, with_ba = TRUE) {
         CL_O = data$cl_outbreak,
         BA = data$tree_ba_sc
     )
+    #browser()
 
     if (with_ba) {
         out <- c(
@@ -156,7 +178,9 @@ make_jags_data <- function(sp, devel = FALSE, with_ba = TRUE) {
 }
 
 
-get_parameters <- function(time_class = TRUE, with_ba = TRUE) {
+get_parameters <- function(
+    time_class = TRUE, polynomial = FALSE,
+    with_ba = TRUE) {
     out <- c()
     if (with_ba) {
         # ba (basal area)
@@ -198,40 +222,80 @@ get_parameters <- function(time_class = TRUE, with_ba = TRUE) {
             "nb_intercept",
             "nb_epmatorg", "nb_ph", "nb_soil",
             "nb_tmean", "nb_tmean2", "nb_cmi", "nb_cmi2",
-            "nb_sp", "nb_sp2", "nb_ba",
-            # perturb
-            "pa_eff_l",
-            "pa_eff_pl",
-            "pa_eff_lpr",
-            "pa_eff_b",
-            "pa_eff_o",
-            "pa_peak_l",
-            "pa_peak_pl",
-            "pa_peak_lpr",
-            "pa_peak_b",
-            "pa_peak_o",
-            "pa_var_l",
-            "pa_var_pl",
-            "pa_var_lpr",
-            "pa_var_b",
-            "pa_var_o",
-            "nb_eff_l",
-            "nb_eff_pl",
-            "nb_eff_lpr",
-            "nb_eff_b",
-            "nb_eff_o",
-            "nb_peak_l",
-            "nb_peak_pl",
-            "nb_peak_lpr",
-            "nb_peak_b",
-            "nb_peak_o",
-            "nb_var_l",
-            "nb_var_pl",
-            "nb_var_lpr",
-            "nb_var_b",
-            "nb_var_o"
-
+            "nb_sp", "nb_sp2", "nb_ba"
         )
+        if (polynomial) {
+            # perturbations parameters for polynomial distrib
+            out <- c(
+                out,
+                "pa_coef1_l",
+                "pa_coef1_pl",
+                "pa_coef1_lpr",
+                "pa_coef1_b",
+                "pa_coef1_o",
+                "pa_coef2_l",
+                "pa_coef2_pl",
+                "pa_coef2_lpr",
+                "pa_coef2_b",
+                "pa_coef2_o",
+                "pa_coef3_l",
+                "pa_coef3_pl",
+                "pa_coef3_lpr",
+                "pa_coef3_b",
+                "pa_coef3_o",
+                "nb_coef1_l",
+                "nb_coef1_pl",
+                "nb_coef1_lpr",
+                "nb_coef1_b",
+                "nb_coef1_o",
+                "nb_coef2_l",
+                "nb_coef2_pl",
+                "nb_coef2_lpr",
+                "nb_coef2_b",
+                "nb_coef2_o",
+                "nb_coef3_l",
+                "nb_coef3_pl",
+                "nb_coef3_lpr",
+                "nb_coef3_b",
+                "nb_coef3_o"
+            )
+        } else {
+            # parameters for gaussian and lognormal models
+            out <- c(
+                out,
+                # perturb
+                "pa_eff_l",
+                "pa_eff_pl",
+                "pa_eff_lpr",
+                "pa_eff_b",
+                "pa_eff_o",
+                "pa_peak_l",
+                "pa_peak_pl",
+                "pa_peak_lpr",
+                "pa_peak_b",
+                "pa_peak_o",
+                "pa_var_l",
+                "pa_var_pl",
+                "pa_var_lpr",
+                "pa_var_b",
+                "pa_var_o",
+                "nb_eff_l",
+                "nb_eff_pl",
+                "nb_eff_lpr",
+                "nb_eff_b",
+                "nb_eff_o",
+                "nb_peak_l",
+                "nb_peak_pl",
+                "nb_peak_lpr",
+                "nb_peak_b",
+                "nb_peak_o",
+                "nb_var_l",
+                "nb_var_pl",
+                "nb_var_lpr",
+                "nb_var_b",
+                "nb_var_o"
+            )
+        }
     }
     out
 }
