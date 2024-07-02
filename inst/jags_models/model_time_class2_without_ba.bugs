@@ -31,40 +31,43 @@ model{
     #--------
 
     # soil
-    pa_epmatorg ~ dnorm(0, 1)
-    pa_ph ~ dnorm(0, 1)
+    pa_epmatorg ~ dnorm(0, 5)
+    pa_ph ~ dnorm(0, 5)
     pa_soil[1] <- 0
     for(i in 2:10){
-        pa_soil[i] ~ dnorm(0, 1)
+        pa_soil[i] ~ dnorm(0, 5)
     }
     # climate
-    pa_tmean ~ dnorm(0, 1)
-    pa_cmi ~ dnorm(0, 1)
-    pa_tmean2 ~ dnorm(0, 1)
-    pa_cmi2 ~ dnorm(0, 1)
+    pa_tmean ~ dnorm(0, 5)
+    pa_cmi ~ dnorm(0, 5)
+    pa_tmean2 ~ dnorm(0, 5)
+    pa_cmi2 ~ dnorm(0, 5)
     # biotic
-    pa_ba ~ dnorm(0, 1)
-    pa_intercept[1] ~ dnorm(0, 1)
-    pa_intercept[2] ~ dnorm(0, 1)
-    pa_sp ~ dnorm(0, 1)
+    pa_ba ~ dnorm(0, 5)
+    pa_intercept[1] ~ dnorm(0, 5)
+    pa_intercept[2] ~ dnorm(0, 5)
+    pa_sp ~ dnorm(0, 5)
     # perturbation
-
-    # class
-    for (i in 1:5){
-        pa_l[i] ~ dnorm(0, 1)
-        pa_pl[i] ~ dnorm(0, 1)
-        pa_lpr[i] ~ dnorm(0, 1)
-        pa_o[i] ~ dnorm(0, 1)
-        pa_b[i] ~ dnorm(0, 1)
+    # classes
+    for (i in 2:4){
+        pa_lpr[i] ~ dnorm(0, 5)
+        pa_o[i] ~ dnorm(0, 5)
     }
-    for (i in 7:8){
-        pa_b[i] ~ dnorm(0, 1)
+    #
+    for (i in 2:6){
+        pa_l[i] ~ dnorm(0, 5)
     }
-    pa_l[6] <- 0
-    pa_pl[6] <- 0
-    pa_lpr[6] <- 0
-    pa_b[6] <- 0
-    pa_o[6] <- 0
+    for (i in 2:5){
+        pa_pl[i] ~ dnorm(0, 5)
+    }
+    for (i in 2:7){
+        pa_b[i] ~ dnorm(0, 5)
+    }
+    pa_l[1] <- 0
+    pa_pl[1] <- 0
+    pa_lpr[1] <- 0
+    pa_b[1] <- 0
+    pa_o[1] <- 0
 
     #----------------------------------------#
     #            MODEL DENSITE               #
@@ -99,37 +102,41 @@ model{
     #--------
 
     # soil
-    nb_epmatorg ~ dnorm(0, 1)
-    nb_ph ~ dnorm(0, 1)
+    nb_epmatorg ~ dnorm(0, 5)
+    nb_ph ~ dnorm(0, 5)
     nb_soil[1] <- 0
     for(i in 2:10){
-        nb_soil[i] ~ dnorm(0, 1)
+        nb_soil[i] ~ dnorm(0, 5)
     }
     # climate
-    nb_tmean ~ dnorm(0, 1)
-    nb_cmi ~ dnorm(0, 1)
-    nb_tmean2 ~ dnorm(0, 1)
-    nb_cmi2 ~ dnorm(0, 1)
+    nb_tmean ~ dnorm(0, 5)
+    nb_cmi ~ dnorm(0, 5)
+    nb_tmean2 ~ dnorm(0, 5)
+    nb_cmi2 ~ dnorm(0, 5)
     # biotic
-    nb_ba ~ dnorm(0, 1)
-    nb_intercept[1] ~ dnorm(0, 1)
-    nb_intercept[2] ~ dnorm(0, 1)
-    nb_sp ~ dnorm(0, 1)
+    nb_ba ~ dnorm(0, 5)
+    nb_intercept[1] ~ dnorm(0, 5)
+    nb_intercept[2] ~ dnorm(0, 5)
+    nb_sp ~ dnorm(0, 5)
     # perturbation
-
-    for (i in 1:5){
-        nb_l[i] ~ dnorm(0, 1)
-        nb_pl[i] ~ dnorm(0, 1)
-        nb_lpr[i] ~ dnorm(0, 1)
-        nb_o[i] ~ dnorm(0, 1)
-        nb_b[i] ~ dnorm(0, 1)
+    # classes
+    for (i in 2:4){
+        nb_lpr[i] ~ dnorm(0, 5)
+        nb_o[i] ~ dnorm(0, 5)
     }
-    for (i in 7:8){
-        nb_b[i] ~ dnorm(0, 1)
+    #
+    for (i in 2:6){
+        nb_l[i] ~ dnorm(0, 5)
     }
-    nb_l[6] <- 0
-    nb_pl[6] <- 0
-    nb_lpr[6] <- 0
-    nb_b[6] <- 0
-    nb_o[6] <- 0
+    for (i in 2:5){
+        nb_pl[i] ~ dnorm(0, 5)
+    }
+    for (i in 2:7){
+        nb_b[i] ~ dnorm(0, 5)
+    }
+    nb_l[1] <- 0
+    nb_pl[1] <- 0
+    nb_lpr[1] <- 0
+    nb_b[1] <- 0
+    nb_o[1] <- 0
 }

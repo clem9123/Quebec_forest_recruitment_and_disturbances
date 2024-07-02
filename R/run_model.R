@@ -31,6 +31,9 @@
 #' run_jags_model("ACERUB", "model_continuous_time_polynomial.bugs",
 #'     n.chains = 3, n.iter = 100, devel = TRUE
 #' )
+# run_jags_model("ACERUB", "model_time_class2_without_ba.bugs",
+#     n.chains = 3, n.iter = 100, devel = TRUE
+# )
 #' }
 #'
 run_jags_model <- function(sp, model_file, filename = paste0(sp, ".rds"),
@@ -44,6 +47,12 @@ run_jags_model <- function(sp, model_file, filename = paste0(sp, ".rds"),
         cli::cli_alert_info("Using time classes")
         if (with_ba) {
             cli::cli_alert_info("Using basal area submodel")
+        }
+        if (grepl("time_class2", model_file)) { 
+            cli::cli_alert_info("Using the age classes version 2")
+            class_v2 <- TRUE
+        } else {
+            class_v2 <- FALSE
         }
     } else {
         if (!grepl("continuous_time", model_file)) {
@@ -68,7 +77,7 @@ run_jags_model <- function(sp, model_file, filename = paste0(sp, ".rds"),
     begin <- Sys.time()
     cli::cli_alert_info("Computation starts {begin}")
     # 2. Load data
-    jags_data <- make_jags_data(sp, devel, with_ba)
+    jags_data <- make_jags_data(sp, devel, with_ba, class_v2)
     # 3. Run model
     param <- get_parameters(time_class, poly, with_ba)
 
@@ -124,9 +133,12 @@ run_analyses <- function(spec, model_file, output_dir = "output", devel = FALSE,
 
 
 # Prepare data for JAGS
-make_jags_data <- function(sp, devel = FALSE, with_ba = TRUE) {
+make_jags_data <- function(sp, devel = FALSE, with_ba = TRUE, class_v2 = FALSE) {
     data <- QuebecSaplingsRecruitment::full_data |>
         dplyr::filter(sp_code == sp)
+    if (class_v2) {
+        data <- use_time_class2(data)
+    }
     if (devel) {
         data <- data |> dplyr::sample_n(2500)
     }
@@ -298,4 +310,53 @@ get_parameters <- function(
         }
     }
     out
+}
+
+
+use_time_class2 <- function(full_data) {
+    ## New classes
+    full_data |>
+        dplyr::mutate(
+            # max 80
+            cl_logging = dplyr::case_when(
+                is_logging == 0 ~ 1,
+                logging <= 10 ~ 2,
+                logging <= 20 ~ 3,
+                logging <= 40 ~ 4,
+                logging <= 60 ~ 5,
+                .default = 6
+            ),
+            # max 54
+            cl_partial_logging = dplyr::case_when(
+                is_partial_logging == 0 ~ 1,
+                partial_logging <= 10 ~ 2,
+                partial_logging <= 20 ~ 3,
+                partial_logging <= 40 ~ 4,
+                .default = 5
+            ),
+            # max 120
+            cl_burn = dplyr::case_when(
+                is_burn == 0 ~ 1,
+                burn <= 10 ~ 2,
+                burn <= 20 ~ 3,
+                burn <= 40 ~ 4,
+                burn <= 60 ~ 5,
+                burn <= 80 ~ 6,
+                .default = 7
+            ),
+            # max 44
+            cl_outbreak = dplyr::case_when(
+                is_outbreak == 0 ~ 1,
+                outbreak <= 10 ~ 2,
+                outbreak <= 20 ~ 3,
+                .default = 4
+            ),
+            # max 35
+            cl_logging_pr = dplyr::case_when(
+                is_logging_pr == 0 ~ 1,
+                logging_pr <= 10 ~ 2,
+                logging_pr <= 20 ~ 3,
+                .default = 4
+            )
+        )
 }
