@@ -1,7 +1,7 @@
 Package: QuebecSaplingsRecruitment
 Type: Package
 Title: Research compendium for a study on the Impacts of disturbances on saplings recruitment
-Version: 0.0.0.9008
+Version: 0.0.0.9009
 Authors@R: c(
     person("Clémentine", "de Montgolfier", role = c("aut", "cre"), 
         email = "clementine.de.montgolfier@ens.psl.eu"),
@@ -14,7 +14,7 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 Depends: 
     R (>= 4.2)
 Imports:

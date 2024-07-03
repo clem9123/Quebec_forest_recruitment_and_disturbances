@@ -43,6 +43,7 @@ run_jags_model <- function(sp, model_file, filename = paste0(sp, ".rds"),
     # use basal area submodel
     with_ba <- grepl("with_ba", model_file)
     time_class <- grepl("time_class", model_file)
+    class_v2 <- FALSE
     if (time_class) {
         cli::cli_alert_info("Using time classes")
         if (with_ba) {
@@ -51,8 +52,6 @@ run_jags_model <- function(sp, model_file, filename = paste0(sp, ".rds"),
         if (grepl("time_class2", model_file)) { 
             cli::cli_alert_info("Using the age classes version 2")
             class_v2 <- TRUE
-        } else {
-            class_v2 <- FALSE
         }
     } else {
         if (!grepl("continuous_time", model_file)) {
