@@ -1,5 +1,4 @@
 # Quebec_forest_recruitment_and_disturbances
- Repo for all the code of my M2 intership at the IRBV with Marie-Hélène Brice
 
 ## Context and summary of the study
 
@@ -20,7 +19,64 @@ We found a significant range shifts for temperate species. Recruitment was prima
 Anthropogenic disturbances could promote certain species and facilitate latitudinal shift.  However, the importance of conspecific adult presence suggests that additional measures, such as assisted migration through plantation, may be necessary to ensure the northward shift of species distribution.
 
 
-## Repo and analyse structure
+
+## Structure of this repository 
+
+This repository is structured as a R package and can be installed as such. 
+
+```R
+install.packages("remotes")
+remotes::install_github("LaboBrice/Quebec_forest_recruitment_and_disturbances")
+```
+
+Once installed, functions and data can be used as follows:
+
+```R
+library(QuebecSaplingsRecruitment)
+```
+
+
+### Data
+
+Raw data are available on the "Données Québec" website at the following URL: https://www.donneesquebec.ca/recherche/dataset/placettes-echantillons-permanentes-1970-a-aujourd-hui.
+
+```{r}
+download.file("https://diffusion.mffp.gouv.qc.ca/Diffusion/DonneeGratuite/Foret/DONNEES_FOR_ECO_SUD/Placettes_permanentes/PEP_GPKG.zip", destfile = "raw_data/PEP.zip")
+```
+
+See scripts `inst/1_Make_data` to see all the steps required to obtain the data used in this analysis (NB: script 1 to 8 must be run in order), the resulting output data frame is `data/full_data.rda` and is an object of the package. 
+
+
+```R
+library(QuebecSaplingsRecruitment)
+head(full_data[, 1:10])
+       id_pe    id_pe_mes no_mes year_measured essence all_cl sp_code tree_nb_sp tree_ba_sp  tree_ba
+1 0119600201 011960020101      1          2001     BOP      0  BETPAP         18    2254.99 13858.39
+2 0119600201 011960020101      1          2001     BOP      0  BETPAP         18    2254.99 13858.39
+3 0119600201 011960020101      1          2001     BOP      0  BETPAP         18    2254.99 13858.39
+4 0119600201 011960020101      1          2001     BOJ      0  BETALL          6     787.87 13858.39
+5 0119600201 011960020101      1          2001     EPB      0  PICGLA          5     776.83 13858.39
+6 0119600201 011960020101      1          2001     EPB      0  PICGLA          5     776.83 13858.39
+```
+
+### Models 
+
+Models were built as standalone JAGS files stored in `inst/jags_models` and models
+were run using the R package [`R2jags`](https://CRAN.R-project.org/package=R2jags),
+see `run_jags_model()` in `R/run_model.R`. For instance: 
+
+```R
+run_jags_model("ACERUB", "model_time_class2_without_ba.bugs",
+    n.chains = 3, n.iter = 100, devel = TRUE
+)
+```
+
+
+
+
+
+
+## OLDER -- Repo and analyse structure
 
 ### Data
 
@@ -30,10 +86,8 @@ Initial data are from the Minister : https://www.donneesquebec.ca/recherche/data
 download.file("https://diffusion.mffp.gouv.qc.ca/Diffusion/DonneeGratuite/Foret/DONNEES_FOR_ECO_SUD/Placettes_permanentes/PEP_GPKG.zip", destfile = "raw_data/PEP.zip")
 ```
 
-See beginning of `inst/1_Make_data/tree_pep.R`
-
-Then all selection and modification on this data are made with the files from
-`R/1_Make_data` (1 to 8 have to bee run in order), the output dataframe is `data/full_data.RData` and is the one I used for all following analyses
+See `inst/1_Make_data/tree_pep.R`.Then all selection and modification on this data are made with the files from
+`inst/1_Make_data` (1 to 8 have to bee run in order), the output data frame is `data/full_data.ata` and is the one I used for all following analyses
 
 It is not necessary to run all the code to make the data, you can just use the output `data/full_data.RData` and start with the analyses part.
 
@@ -52,6 +106,7 @@ Table correspondance soil caracteristics/number :
 | 6 | texture fine et de drainage subhydrique |
 | 7 | drainage hydrique, ombrotrophe |
 | 8 | drainage hydrique, minérotrophe |
+
 
 ### Analyses
 
@@ -89,7 +144,7 @@ With :
 - `Model.txt` : The model specification
 - `function_run.R` : Create the function to run the model with jags.parallel
 (Make the specific data for the model)
-- `Run.R` : Run the model for all the sppecies in parallel **!!! Uses a lot of core (30) so be careful to have enough on your system or decrease the number in :
+- `Run.R` : Run the model for all the species in parallel **!!! Uses a lot of core (30) so be careful to have enough on your system or decrease the number in :
 
 ```{r}
 cl <- makeCluster(30)
@@ -102,9 +157,9 @@ Analyse of the model output are made in `Analyse.Rmd` and uses `function_analyse
 Output of the 8 individual model for each species was not uploaded here because of weight but you can find some of the data I extracted from them in `/output`
 
 They are data frame with the parameters and the 95% credible interval for each species
-- `all_param.rds` : data frame with all covariates parameters (presence of conspecific adult indivisuals, basal area, soil, climate...)
+- `all_param.rds` : data frame with all covariates parameters (presence of conspecific adult individuals, basal area, soil, climate...)
 - `quadratic.rds` : data frame with the quadratic effect of cmi and temperature
-- `disturbance_pa.rds` and `disturbance_nb.rds` : data frame with the effect of each disturbance after 10, 20 and 30 years on presence and abundance respectively
+- `disturbance_pa.rds` and `disturbance_nb.rds`: data frame with the effect of each disturbance after 10, 20 and 30 years on presence and abundance respectively
 
 `Pre-article.Rmd` allows you to make the figure for these data frames
 
@@ -116,7 +171,7 @@ IMPORTANT :
 - [x] Refaire tourner les modèles avec 
 - [x] et sans BA
 - [x] (+ tableau de comparaison déviance + BIC)
-- [x] Faire des output utilisable : (tableau plus cours des résutats poir pouvoir les uploader sur Github dans output)
+- [x] Faire des output utilisable : (tableau plus cours des résutats pour pouvoir les uploader sur Github dans output)
 - [x] Relire le README
 - [x] Relire le code
 - [ ] Relire le rapport
